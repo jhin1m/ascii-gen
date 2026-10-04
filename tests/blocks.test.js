@@ -18,7 +18,7 @@ module.exports = ({ ADG, test, assert }) => {
   });
 
   test('every block renders exactly its width at 24..120 cols, also with empty config', () => {
-    const cfgs = { header: tpl.header, steps: {}, 'side-column': tpl.side, flow: tpl.flow, table: tpl.flow.table, timeline: tpl.timeline, log: tpl.log, meters: tpl.meters, status: tpl.status };
+    const cfgs = { header: tpl.header, steps: {}, 'side-column': tpl.side, flow: tpl.flow, table: tpl.flow.nodes.router, timeline: tpl.timeline, log: tpl.log, meters: tpl.meters, status: tpl.status };
     Object.keys(cfgs).forEach((type) => [24, 40, 66, 120].forEach((w) => [cfgs[type], {}].forEach((cfg) => {
       const r = render(type, cfg, w);
       assert.eq(r.grid.W, w, type + '@' + w);
@@ -67,13 +67,13 @@ module.exports = ({ ADG, test, assert }) => {
   });
 
   test('table: header, highlighted row with marker, bar, value, route, note; anchor', () => {
-    const r = render('table', tpl.flow.table, 59);
+    const r = render('table', Object.assign({ id: 'router' }, tpl.flow.nodes.router), 59);
     const l = lines(r);
     assert.eq(l[3], '|>which file   [#################..:] 0.84  sharp -> code |');
     assert.eq(r.grid.cells[3][20].bg, 'hlrow');
     assert.eq(l[7].trim(), '| sharp: runs in code, lead never sees it                 |'.trim());
     assert.deq(r.anchors, [{ id: 'router', x: 0, y: 0, w: 59, h: 9 }]);
-    const narrow = lines(render('table', tpl.flow.table, 30));
+    const narrow = lines(render('table', tpl.flow.nodes.router, 30));
     assert.ok(narrow[3].indexOf('[') > 0, 'bar still shown at 30 cols');
   });
 
@@ -111,7 +111,7 @@ module.exports = ({ ADG, test, assert }) => {
     assert.eq(l[8], '|<> m          |');
     assert.eq(l[10], '| : » a        |');
     assert.deq([l[12], l[13]], ['| : k        9 |', '| : j        8 |']);
-    assert.deq(r.links, [{ x: 16, y: 8, to: 'n1' }]);
+    assert.deq(r.links, [{ x: 16, y: 8, to: "n1", from: "m" }]);
     assert.eq(lines(render('side-column', cfg, 16))[3], '|<> m          |', 'no anchor → no snap');
   });
 

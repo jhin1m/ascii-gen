@@ -19,13 +19,18 @@
     }
   }
 
+  /** Anchor a milestone snaps to: in this row and not flagged unreachable (reach:false). */
+  const target = (it, ctx) => {
+    const a = it.kind === 'milestone' && it.link && ctx.anchors.find((t) => t.id === it.link);
+    return a && a.reach !== false ? a : null;
+  };
   /** y of every item (block-relative), honouring snap targets; returns { ys, end }. */
   function place(items, ctx) {
     const ys = [];
     let y = 3, prev = null;
     items.forEach((it) => {
       if (prev && !(prev.kind === 'kv' && it.kind === 'kv') && prev.kind !== 'gap' && it.kind !== 'gap') y++;
-      const a = it.kind === 'milestone' && it.link && it.snap !== false && ctx.anchors.find((t) => t.id === it.link);
+      const a = it.snap !== false && target(it, ctx);
       if (a) y = Math.max(y, a.y + Math.floor(a.h / 2));
       ys.push(y);
       y += itemHeight(it);
@@ -63,7 +68,7 @@
           g.mtext(4, y, U.str(it.title), 'fg', true, null, tw);
           g.mtext(4, y + 1, U.str(it.q), 'fg', false, null, tw);
           if (U.str(it.a)) g.mtext(4, y + 2, '» ' + U.str(it.a), color, false, null, tw);
-          if (it.link) links.push({ x: w, y, to: String(it.link) });
+          if (it.link) links.push({ x: w, y, to: String(it.link), from: U.str(it.title) });
         } else if (it.kind === 'note') {
           U.lines(it.text).forEach((l, j) => g.mtext(4, y + j, l, 'fg', false, null, tw));
         } else if (it.kind === 'kv') {

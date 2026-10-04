@@ -95,20 +95,24 @@
   }
 
   /**
-   * Draw a link arrow only when it can be read: target in the same layout row, the link row
-   * inside the target's rows and every cell on the way blank. Returns false when skipped.
+   * Draw a link arrow only when it can be read: target in the same layout row, not behind another
+   * node, the link row inside the target's rows and every cell on the way blank.
+   * Returns null when drawn, else why it was skipped: 'missing' (no such anchor), 'unreachable'
+   * (other row, blocked, or no room) or 'out-of-rows' (the link row misses the target's rows).
    */
   function linkClear(grid, l, anchors) {
     const a = anchors.find((t) => t.id === l.to);
-    if (!a || a.row !== l.row || l.y < a.y || l.y >= a.y + a.h || l.y >= grid.H || a.x - 1 <= l.x) return false;
-    for (let x = l.x; x < a.x; x++) if (grid.cells[l.y][x].ch !== ' ') return false;
+    if (!a) return 'missing';
+    if (a.row !== l.row || a.reach === false || a.x - 1 <= l.x || l.y >= grid.H) return 'unreachable';
+    if (l.y < a.y || l.y >= a.y + a.h) return 'out-of-rows';
+    for (let x = l.x; x < a.x; x++) if (grid.cells[l.y][x].ch !== ' ') return 'unreachable';
     grid.arrowR(l.x, a.x - 1, l.y, 'mut', true);
-    return true;
+    return null;
   }
 
   /**
    * @param {object} config dashboard config ({ grid:{cols}, border, actors, steps, current, layout, blocks })
-   * @returns {{ grid: object, anchors: Array<{id,x,y,w,h}>, cols: number, rows: number }}
+   * @returns {{ grid: object, anchors: Array<{id,x,y,w,h}>, cols: number, rows: number, skipped: Array<{from,to,reason}> }}
    */
   function compose(config) {
     config = config || {};
@@ -127,15 +131,17 @@
       res.forEach((r, i) => {
         placed.push({ grid: r.grid, x: xs[i], y });
         ADG.blocks.util.arr(r.anchors).forEach((a) => anchors.push(Object.assign({}, a, { x: a.x + xs[i], y: a.y + y, row: ri })));
-        ADG.blocks.util.arr(r.links).forEach((l) => links.push({ x: l.x + xs[i], y: l.y + y, to: l.to, row: ri }));
+        ADG.blocks.util.arr(r.links).forEach((l) => links.push({ x: l.x + xs[i], y: l.y + y, to: l.to, row: ri, from: String(l.from || items[i].key) }));
       });
       y += h + GAP_Y;
     });
     const rows = Math.min(MAX_ROWS, Math.max(1, y - GAP_Y));
     const grid = ADG.grid.createGrid(cols, rows, { border: ctx.border, actors: ctx.slots });
     placed.forEach((p) => grid.blit(p.grid, p.x, p.y));
-    links.forEach((l) => { if (!linkClear(grid, l, anchors)) console.warn('[ascii-gen] layout: no clear path for link to "' + l.to + '"'); });
-    return { grid, anchors: anchors.map((a) => ({ id: a.id, x: a.x, y: a.y, w: a.w, h: a.h })), cols, rows };
+    // links that cannot be drawn are reported, not logged: the UI decides whether to tell the user
+    const skipped = [];
+    links.forEach((l) => { const reason = linkClear(grid, l, anchors); if (reason) skipped.push({ from: l.from, to: l.to, reason }); });
+    return { grid, anchors: anchors.map((a) => ({ id: a.id, x: a.x, y: a.y, w: a.w, h: a.h })), cols, rows, skipped };
   }
 
   ADG.layout = { compose, split, makeCtx, clampCols, MARGIN, GAP_X, GAP_Y, PAD_TOP };

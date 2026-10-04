@@ -103,10 +103,18 @@ module.exports = ({ ADG, test, assert, warnings }) => {
     assert.eq(compose({ layout: 'x' }).grid.H, 1);
   });
 
+  test('typo in a link id is reported as missing; the fan template skips nothing', () => {
+    const cfg = pipeline();
+    assert.deq(compose(cfg).skipped, []);
+    cfg.blocks.side.items[0].link = 'leadd';
+    assert.deq(compose(cfg).skipped, [{ from: 'before a plan', to: 'leadd', reason: 'missing' }]);
+  });
+
   test('links to missing anchors draw nothing', () => {
     const cfg = pipeline();
     cfg.blocks.side.items[0].link = 'ghost';
-    const { grid, anchors } = compose(cfg);
+    const { grid, anchors, skipped } = compose(cfg);
+    assert.deq(skipped, [{ from: 'before a plan', to: 'ghost', reason: 'missing' }]);
     const lead = anchors.find((t) => t.id === 'lead');
     const y = grid.toLines().findIndex((l) => l.indexOf('<> before a plan') >= 0);
     assert.eq(y, 8 + 3, 'first item row (side column starts on row 8)');
@@ -126,7 +134,8 @@ module.exports = ({ ADG, test, assert, warnings }) => {
     const worker = out.anchors.find((a) => a.id === 'worker');
     const l = out.grid.toLines();
     for (let y = worker.y + 1; y < worker.y + worker.h - 1; y++) assert.eq(l[y][worker.x + worker.w - 1], '|', 'worker right border row ' + y);
-    assert.ok(warned);
+    assert.ok(!warned, 'skipped links are reported, not logged');
+    assert.deq(out.skipped, [{ from: 'error again', to: 'researcher', reason: 'unreachable' }]);
   });
 
   test('link whose milestone cannot reach the node rows is dropped', () => {
@@ -136,7 +145,8 @@ module.exports = ({ ADG, test, assert, warnings }) => {
     const y = out.grid.toLines().findIndex((t) => t.indexOf('<> late') >= 0);
     assert.ok(y > 0, 'milestone drawn');
     assert.ok(out.grid.toLines()[y].slice(28).indexOf('- -') < 0, 'no dashed arrow');
-    assert.ok(warned);
+    assert.ok(!warned, 'skipped links are reported, not logged');
+    assert.deq(out.skipped, [{ from: 'late', to: 'lead', reason: 'out-of-rows' }]);
   });
 
   test('link never crosses a block placed between source and target', () => {
@@ -152,7 +162,7 @@ module.exports = ({ ADG, test, assert, warnings }) => {
     cfg.actors.push({ id: 'a1', name: 'hijack', color: 'a3' }, { id: 'x', name: 'x', color: 'constructor' });
     cfg.blocks.header.legendColor = 'a1:x} {lead';
     cfg.blocks.side.color = 'red';
-    cfg.blocks.flow.table.color = '__proto__';
+    cfg.blocks.flow.nodes.router.color = '__proto__';
     const { grid } = compose(cfg);
     const keys = ADG.theme.COLOR_KEYS;
     grid.cells.forEach((row) => row.forEach((c) => {
@@ -167,8 +177,8 @@ module.exports = ({ ADG, test, assert, warnings }) => {
     const cfg = pipeline();
     const big = (n, f) => Array.from({ length: n }, f);
     cfg.blocks.timeline.rows = big(5000, () => ({ actor: 'lead', pattern: '#' }));
-    cfg.blocks.flow.table.rows = big(3000, () => ({ name: 'r', ratio: 0.5 }));
-    cfg.blocks.flow.top.lines = big(500, () => 'x');
+    cfg.blocks.flow.nodes.router.rows = big(3000, () => ({ name: 'r', ratio: 0.5 }));
+    cfg.blocks.flow.nodes.lead.lines = big(500, () => 'x');
     cfg.layout = cfg.layout.concat(big(200, () => ['timeline']));
     const { rows, grid } = compose(cfg);
     assert.ok(rows <= 400, 'rows ' + rows);

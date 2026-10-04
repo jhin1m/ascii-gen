@@ -1,8 +1,7 @@
 /* Template: Agent pipeline (the ref.png composition). Content is English and uses generic role
    names only. get() returns a fresh deep copy so callers can mutate it freely. */
 (function (ADG) {
-  const node = (id, lines, footer) => Object.assign({ id, lines }, footer ? { footer } : {});
-  const worker = (id, desc) => node(id, [id, '{lead:lead} · {a2:medium}', '{dim:' + desc + '}'], { status: 'idle', ratio: 0, badge: '{m:[..]}' });
+  const worker = (name, desc) => ({ lines: [name, '{lead:lead} · {a2:medium}', '{dim:' + desc + '}'], footer: { status: 'idle', ratio: 0, badge: '{m:[..]}' } });
 
   const CONFIG = {
     grid: { cols: 96 },
@@ -51,24 +50,28 @@
         ]
       },
       flow: {
-        top: node('lead', ['{a1b:LEAD · main session}', 'effort {bar:1:6:a1} {a2b:high} · ctx 1M', '{dim:plans + decides}']),
-        loop: { label: 'split' },
-        table: {
-          id: 'router',
-          title: '{a3b:ROUTER} · {a3b:fork layer} · one call · < 0.5 s',
-          right: '{a3b:1,683 forks}',
-          cols: ['fork', 'p(top)', 'route'],
-          rows: [
-            { name: 'which file', ratio: 0.84, route: 'sharp -> code' },
-            { name: 'which tool', ratio: 0.46, route: '{a1b:split -> lead}' },
-            { name: 'retry/stop', ratio: 0.54, route: '{a1b:split -> lead}' }
-          ],
-          highlight: 0,
-          note: '{a3b:sharp}: runs in code, lead never sees it'
-        },
+        // DSL over actor ids (titles follow the actors' names); node data is keyed by node (`lead#2` = the second `lead`)
+        dsl: ADG.flowPresets.presetDsl('fan'),
         caption: 'delegate · 3 workers · {a2b:effort medium}',
-        fan: [worker('worker', 'edits + checks'), worker('explorer', 'reads the code'), worker('researcher', 'pulls the docs')],
-        bottom: node('review', ['{a1b:back to main session · high}', '**review + verify**', '{advisor:advisor} reviews · {lead:lead} ships', '{dim:4 diffs · no edits until go}'])
+        nodes: {
+          lead: { lines: ['{a1b:LEAD · main session}', 'effort {bar:1:6:a1} {a2b:high} · ctx 1M', '{dim:plans + decides}'] },
+          router: {
+            title: '{a3b:ROUTER} · {a3b:fork layer} · one call · < 0.5 s',
+            right: '{a3b:1,683 forks}',
+            cols: ['fork', 'p(top)', 'route'],
+            rows: [
+              { name: 'which file', ratio: 0.84, route: 'sharp -> code' },
+              { name: 'which tool', ratio: 0.46, route: '{a1b:split -> lead}' },
+              { name: 'retry/stop', ratio: 0.54, route: '{a1b:split -> lead}' }
+            ],
+            highlight: 0,
+            note: '{a3b:sharp}: runs in code, lead never sees it'
+          },
+          worker: worker('worker', 'edits + checks'),
+          explorer: worker('explorer', 'reads the code'),
+          researcher: worker('researcher', 'pulls the docs'),
+          'lead#2': { id: 'review', lines: ['{a1b:back to main session · high}', '**review + verify**', '{advisor:advisor} reviews · {lead:lead} ships', '{dim:4 diffs · no edits until go}'] }
+        }
       },
       timeline: {
         title: 'session timeline',

@@ -1,7 +1,7 @@
 ---
 phase: 3
 title: "Phase 3: Flow DSL and presets"
-status: todo
+status: completed
 priority: P1
 effort: "6h"
 dependencies: [2]
@@ -25,7 +25,7 @@ Thay flow tạm bằng: DSL 1 dòng/chuỗi → graph → bố cục tầng (fan
   - Hub: center box nét đôi, ≤4 spoke (trên/trái/phải/dưới) mũi tên `<->`; spoke thứ 5+ → bảng phía dưới
   - Back-edge (`..>` ngược tầng): đi theo cột phải ngoài cùng, góc `+`/`┐┘`, nhãn cạnh mũi tên
   - Export anchors cho mọi node (side column dùng)
-- Preset: `fan` = `lead -> router@table -> [worker, explorer, researcher] -> lead` + `router ..> lead : split`; `hub` = `lead <-> [router, worker, explorer, researcher]` + `lead -> health@table`. DSL dùng **tên hiển thị** actor; đổi tên actor → viết lại DSL tương ứng
+- Preset: `fan` = `lead -> router@table -> [worker, explorer, researcher] -> lead` + `router ..> lead : split`; `hub` = `lead <-> [router, worker, explorer, researcher]` + `lead -> health@table`. DSL dùng **id actor** ổn định (`lead`, `router`, ...): ident trùng id actor thì nút lấy tiêu đề (`actor.name`, giữ dấu/khoảng trắng) và màu từ actor đó; ident khác là nút tự do (tiêu đề = ident). `nodes` và anchor khóa theo id (lặp lại: `id#2`). Đổi tên actor không cần sửa DSL/`nodes`; `presetDsl(id)` không còn tham số tên. <!-- Updated: review phase 3/6 - actor id -->
 
 ## Architecture
 ```
@@ -45,14 +45,17 @@ blocks/flow.render(cfg,w,ctx): rank → place (x,y,w,h) → draw boxes → draw 
 3. Rank: BFS từ nút không có cạnh vào (bỏ back-edge); nhận diện hub khi có `<->` với nhóm
 4. Placement theo width; reuse `table` block để vẽ node `@table`
 5. Vẽ edges: thẳng xuống, fan-out/in, back-edge cột phải, `<->` ngang/dọc
-6. Preset + hàm `presetDsl(id, names)`
+6. Preset + hàm `presetDsl(id)` <!-- Updated: phase 3/6 execution - no names arg -->
 7. Tests: parse các ví dụ + lỗi; rank fan/hub; render 80/96/120 self-check 0; anchors có cho mọi node
 
 ## Success Criteria
-- [ ] Preset fan render tương đương bố cục ref.png (gồm vòng `split`)
-- [ ] Preset hub render như mockup; mũi tên side column trỏ đúng node
-- [ ] DSL sai → báo lỗi dòng/cột, hình cũ giữ nguyên
-- [ ] Tests pass
+<!-- Updated: phase 3/6 execution -->
+- [x] Preset fan render tương đương bố cục ref.png (gồm vòng `split`) — self-check 0 cảnh báo; so ảnh thật với ref.png ở Phase 8
+- [ ] Preset hub render như mockup; mũi tên side column trỏ đúng node — hub render OK, nhưng hub trong agent-pipeline chưa có mũi tên side column (partial)
+- [ ] DSL sai → báo lỗi dòng/cột, hình cũ giữ nguyên — parse trả `{error:{line,col,msg}}` xong; giữ hình cũ (M6) hoãn sang Phase 5 editor
+- [x] Tests pass — `node tests/run.js` 140/140; self-check 0 cảnh báo (fan+hub, 7 theme × 2 viền × 80/96/120)
+
+Ghi chú hoàn thành: `layout.compose` trả `skipped:[{from,to,reason}]` (missing/unreachable/out-of-rows) thay cho console warn. Review 8.5/10 (re-review).
 
 ## Risk Assessment
 - Graph tuỳ ý có thể không vẽ đẹp → giới hạn hỗ trợ: DAG theo tầng + back-edge + hub; ngoài phạm vi → báo "không hỗ trợ" thay vì vẽ sai
