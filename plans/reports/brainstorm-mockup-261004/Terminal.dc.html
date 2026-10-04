@@ -1,0 +1,501 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Terminal renderer</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&amp;family=IBM+Plex+Mono:wght@400;700&amp;family=Fira+Code:wght@400;700&amp;family=VT323&amp;display=swap">
+<style>
+body{margin:0}
+.adg-blink{animation:adg-blink 1.05s steps(1) infinite}
+@keyframes adg-blink{50%{opacity:0}}
+</style>
+</helmet>
+<div style="{{outerStyle}}">
+<div style="{{screenStyle}}">
+
+<sc-if value="{{isMac}}" hint-placeholder-val="{{ true }}">
+<div style="{{barStyle}}">
+<div style="display: flex; gap: 0.55em; align-items: center; justify-self: start">
+<span style="display: block; width: 0.95em; height: 0.95em; border-radius: 50%; background: #ff5f57"></span>
+<span style="display: block; width: 0.95em; height: 0.95em; border-radius: 50%; background: #febc2e"></span>
+<span style="display: block; width: 0.95em; height: 0.95em; border-radius: 50%; background: #28c840"></span>
+</div>
+<div style="{{titleStyle}}">{{macTitle}}</div>
+<div style="{{creditStyle}}">{{credit}}</div>
+</div>
+</sc-if>
+
+<sc-if value="{{isWin}}" hint-placeholder-val="{{ false }}">
+<div style="{{winBarStyle}}">
+<div style="{{winTabStyle}}">
+<span style="{{winIconStyle}}">&gt;_</span>
+<span>zsh</span>
+<span style="{{mutStyle}}">×</span>
+</div>
+<span style="{{winPlusStyle}}">+</span>
+<span style="{{winPlusStyle}}">⌄</span>
+<div style="flex: 1"></div>
+<div style="{{creditStyle}}">{{credit}}</div>
+<div style="display: flex; align-self: stretch; margin-left: 1em">
+<span style="{{capStyle}}"><svg viewBox="0 0 12 12" style="width: 0.85em; height: 0.85em" fill="none" stroke="currentColor" stroke-width="1"><path d="M1 6h10"></path></svg></span>
+<span style="{{capStyle}}"><svg viewBox="0 0 12 12" style="width: 0.85em; height: 0.85em" fill="none" stroke="currentColor" stroke-width="1"><rect x="1.5" y="1.5" width="9" height="9"></rect></svg></span>
+<span style="{{capStyle}}"><svg viewBox="0 0 12 12" style="width: 0.85em; height: 0.85em" fill="none" stroke="currentColor" stroke-width="1"><path d="M1.5 1.5l9 9M10.5 1.5l-9 9"></path></svg></span>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{isUbuntu}}" hint-placeholder-val="{{ false }}">
+<div style="{{barStyle}}">
+<div style="display: flex; gap: 0.4em; justify-self: start">
+<span style="{{gnomeBtnStyle}}"><svg viewBox="0 0 12 12" style="width: 0.8em; height: 0.8em" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M6 2v8M2 6h8"></path></svg></span>
+</div>
+<div style="{{ubuTitleStyle}}">{{ubuTitle}}</div>
+<div style="display: flex; gap: 0.55em; justify-self: end; align-items: center">
+<span style="{{gnomeCircleStyle}}"><svg viewBox="0 0 12 12" style="width: 0.6em; height: 0.6em" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 6h8"></path></svg></span>
+<span style="{{gnomeCircleStyle}}"><svg viewBox="0 0 12 12" style="width: 0.6em; height: 0.6em" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2" y="2" width="8" height="8"></rect></svg></span>
+<span style="{{gnomeCloseStyle}}"><svg viewBox="0 0 12 12" style="width: 0.6em; height: 0.6em" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7"></path></svg></span>
+</div>
+</div>
+</sc-if>
+
+<div style="position: relative; padding: 1.3em 1.5em 1.4em">
+<div style="{{preStyle}}">
+<sc-for list="{{rows}}" as="row" hint-placeholder-count="70"><div style="{{rowStyle}}"><sc-for list="{{row.segs}}" as="s" hint-placeholder-count="4"><span class="{{s.k}}" style="{{s.st}}">{{s.t}}</span></sc-for></div></sc-for>
+</div>
+<sc-if value="{{scanline}}" hint-placeholder-val="{{ false }}">
+<div style="{{scanStyle}}"></div>
+</sc-if>
+</div>
+</div>
+
+<sc-if value="{{isCrt}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; align-items: center; justify-content: space-between; height: 3.2em; padding: 0 0.6em">
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 0.8em; letter-spacing: 0.35em; color: #8b8273; font-weight: 700">ADG·96</span>
+<span style="display: flex; align-items: center; gap: 0.6em; font-family: 'JetBrains Mono', monospace; font-size: 0.65em; letter-spacing: 0.2em; color: #6f685d">POWER<span style="display: block; width: 0.9em; height: 0.9em; border-radius: 50%; background: #6dff8e; box-shadow: 0 0 0.8em #6dff8e"></span></span>
+</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["midnight","dracula","gruvbox","solarized","phosphor","amber","paper"],"default":"midnight"},"win":{"editor":"enum","options":["macos","windows","ubuntu","crt"],"default":"macos"},"flow":{"editor":"enum","options":["fan","hub"],"default":"fan"},"step":{"editor":"int","min":0,"max":6,"default":1},"seed":{"editor":"int","min":0,"max":9999,"default":0},"fontSize":{"editor":"float","min":2,"max":20,"step":0.5,"default":12.5},"lineHeight":{"editor":"float","min":1.1,"max":1.8,"step":0.05,"default":1.5},"font":{"editor":"enum","options":["JetBrains Mono","IBM Plex Mono","Fira Code","VT323"],"default":"JetBrains Mono"},"border":{"editor":"enum","options":["ascii","unicode"],"default":"ascii"},"chrome":{"editor":"boolean","default":true},"glow":{"editor":"boolean","default":false},"scanline":{"editor":"boolean","default":false},"blink":{"editor":"boolean","default":true},"names":{"editor":null},"$preview":{"width":760,"height":1400}}'>
+/* Mockup renderer: every block draws into one 2D cell grid, so columns always line up. */
+const THEMES = {
+  midnight: { bg: '#1b1e2b', fg: '#e6e8f0', mut: '#6c7189', a1: '#f27eb5', a2: '#ecd67a', a3: '#7dd8d0', a4: '#8fd694', a5: '#a99cf5', a6: '#f2a272' },
+  dracula: { bg: '#282a36', fg: '#f8f8f2', mut: '#6d7cb0', a1: '#ff79c6', a2: '#f1fa8c', a3: '#8be9fd', a4: '#50fa7b', a5: '#bd93f9', a6: '#ffb86c' },
+  gruvbox: { bg: '#282828', fg: '#ebdbb2', mut: '#928374', a1: '#d3869b', a2: '#fabd2f', a3: '#8ec07c', a4: '#b8bb26', a5: '#83a598', a6: '#fe8019' },
+  solarized: { bg: '#002b36', fg: '#eee8d5', mut: '#6f8b93', a1: '#e05a9c', a2: '#d3a400', a3: '#2aa198', a4: '#9cb300', a5: '#8a8fe0', a6: '#e0662a' },
+  phosphor: { bg: '#07110a', fg: '#b9ffc8', mut: '#3f7d4f', a1: '#62ff8a', a2: '#d2ff70', a3: '#4fffd0', a4: '#2cff63', a5: '#9effb3', a6: '#c4ff9a' },
+  amber: { bg: '#140c03', fg: '#ffd89e', mut: '#8f5d1f', a1: '#ffb000', a2: '#ffd04d', a3: '#ff9a1f', a4: '#ffe28a', a5: '#e8a24a', a6: '#ff7a1a' },
+  paper: { bg: '#f5f1e6', fg: '#26251f', mut: '#7a7466', a1: '#b8336a', a2: '#9a6f00', a3: '#1c7a80', a4: '#3b833b', a5: '#5a4fc0', a6: '#b8561c' }
+};
+/* actor id -> accent slot; display names come from the `names` prop so one rename updates every block */
+const ACTORS = { advisor: 'a2', lead: 'a1', router: 'a3', worker: 'a2', explorer: 'a2', researcher: 'a2' };
+const STEPS = ['plan', 'fork', 'delegate', 'work', 'merge', 'review', 'ship'];
+
+function hx(h) { h = h.replace('#', ''); return [0, 2, 4].map((i) => parseInt(h.substr(i, 2), 16)); }
+function mix(a, b, t) { const A = hx(a), B = hx(b); return '#' + A.map((v, i) => Math.round(v * t + B[i] * (1 - t)).toString(16).padStart(2, '0')).join(''); }
+function palette(t) {
+  return Object.assign({}, t, {
+    dim: mix(t.fg, t.bg, 0.62), dot: mix(t.mut, t.bg, 0.62), hlrow: mix(t.a4, t.bg, 0.15),
+    hlstep: mix(t.a2, t.bg, 0.3), hlcur: mix(t.a2, t.bg, 0.28), logrow: mix(t.fg, t.bg, 0.07),
+    chrome: mix(t.fg, t.bg, 0.06), line: mix(t.fg, t.bg, 0.12)
+  });
+}
+function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function dataFor(seed) {
+  const D = { tr: [0.84, 0.46, 0.54], hub: [0.72, 0.38, 0.55, 0.2], met: [1, 0.35, 0.1], pulse: [1, 1, 0, 1, 1, 1, 0, 0, 1, 1], rhash: 7919, tokens: '643k', fork0: 1546 };
+  if (!seed) return D;
+  const r = mulberry32(seed);
+  D.tr = D.tr.map(() => 0.2 + r() * 0.78);
+  D.hub = D.hub.map(() => 0.1 + r() * 0.85);
+  D.met = [1, 0.15 + r() * 0.6, 0.05 + r() * 0.3];
+  D.pulse = D.pulse.map(() => (r() > 0.35 ? 1 : 0));
+  D.rhash = 1 + Math.floor(r() * 9000);
+  D.tokens = Math.floor(100 + r() * 900) + 'k';
+  D.fork0 = Math.floor(400 + r() * 3000);
+  return D;
+}
+function clip(s, n) { const a = Array.from(s); return a.length > n ? a.slice(0, n - 1).join('') + '…' : s; }
+
+/* Inline markup: {a1:text} color, {a1b:text} bold, {actor:text} actor color, {bar:ratio:width:slot}, **bold** */
+function parse(s) {
+  const out = []; const re = /\{([a-z0-9]+):([^}]*)\}|\*\*([^*]+)\*\*/g; let last = 0, m;
+  while ((m = re.exec(s)) !== null) {
+    if (m.index > last) out.push({ t: s.slice(last, m.index) });
+    if (m[3] !== undefined) out.push({ t: m[3], b: true });
+    else {
+      let tag = m[1]; const body = m[2];
+      if (tag === 'bar') { const q = body.split(':'); out.push({ bar: true, r: parseFloat(q[0]) || 0, w: parseInt(q[1], 10) || 8, fg: q[2] || 'a1' }); }
+      else if (ACTORS[tag]) out.push({ t: body, fg: ACTORS[tag], b: true });
+      else { let b = false; if (tag.length > 2 && tag.endsWith('b')) { b = true; tag = tag.slice(0, -1); } if (tag === 'm') tag = 'mut'; out.push({ t: body, fg: tag, b }); }
+    }
+    last = re.lastIndex;
+  }
+  if (last < s.length) out.push({ t: s.slice(last) });
+  return out;
+}
+function mlen(s) { return parse(s).reduce((a, g) => a + (g.bar ? g.w : Array.from(g.t).length), 0); }
+
+function makeGrid(W, H, uni) {
+  const cells = [];
+  for (let y = 0; y < H; y++) { const r = []; for (let x = 0; x < W; x++) r.push({ ch: ' ', fg: 'fg', bg: null, b: false, k: '' }); cells.push(r); }
+  const B = uni ? {
+    solid: { tl: '┌', tr: '┐', bl: '└', br: '┘', h: '─', v: '│' },
+    dash: { tl: '┌', tr: '┐', bl: '└', br: '┘', h: '╌', v: '╎' },
+    dbl: { tl: '╔', tr: '╗', bl: '╚', br: '╝', h: '═', v: '║' }
+  } : {
+    solid: { tl: '+', tr: '+', bl: '+', br: '+', h: '-', v: '|' },
+    dash: { tl: '+', tr: '+', bl: '+', br: '+', h: '-', v: '|', gap: true },
+    dbl: { tl: '+', tr: '+', bl: '+', br: '+', h: '=', v: '|' }
+  };
+  const J = uni
+    ? { down: '┬', up: '┴', ddown: '╤', dup: '╧', dright: '╟', tl: '┌', tr: '┐', bl: '└', br: '┘', h: '─', dh: '╌', v: '│', eq: '═' }
+    : { down: '+', up: '+', ddown: '+', dup: '+', dright: '+', tl: '+', tr: '+', bl: '+', br: '+', h: '-', dh: '-', v: '|', eq: '=' };
+  const g = { W, H, cells, J };
+  g.put = (x, y, ch, fg, b, bg, k) => { if (x < 0 || y < 0 || x >= W || y >= H) return; const c = cells[y][x]; c.ch = ch; c.fg = fg || 'fg'; c.b = !!b; if (bg) c.bg = bg; c.k = k || ''; };
+  g.text = (x, y, s, fg, b, bg) => { const a = Array.from(s); a.forEach((ch, i) => g.put(x + i, y, ch, fg, b, bg)); return a.length; };
+  g.fillBg = (x, y, w, bg) => { for (let i = 0; i < w; i++) if (x + i < W) cells[y][x + i].bg = bg; };
+  g.mtext = (x, y, s, dfg, db, bg) => {
+    let cx = x;
+    for (const seg of parse(s)) {
+      if (seg.bar) { g.bar(cx, y, seg.w, seg.r, seg.fg); cx += seg.w; }
+      else cx += g.text(cx, y, seg.t, seg.fg || dfg || 'fg', seg.b !== undefined ? seg.b : db, bg);
+    }
+    return cx - x;
+  };
+  g.center = (x, w, y, s, dfg, db) => g.mtext(x + Math.floor((w - mlen(s)) / 2), y, s, dfg, db);
+  g.right = (x2, y, s, dfg, db) => g.mtext(x2 - mlen(s) + 1, y, s, dfg, db);
+  g.hline = (x, y, len, fg, dashed) => { for (let i = 0; i < len; i++) g.put(x + i, y, dashed ? (uni ? J.dh : (i % 2 ? ' ' : '-')) : J.h, fg); };
+  g.divider = (x, y, len, fg) => { for (let i = 0; i < len; i++) g.put(x + i, y, J.eq, fg); };
+  g.vline = (x, y, len, fg, ch) => { for (let i = 0; i < len; i++) g.put(x, y + i, ch || J.v, fg); };
+  g.arrowR = (x1, x2, y, fg, dashed) => { g.hline(x1, y, x2 - x1, fg, dashed); g.put(x2, y, '>', fg); };
+  g.arrowBoth = (x1, x2, y, fg) => { g.hline(x1, y, x2 - x1 + 1, fg); g.put(x1, y, '<', fg); g.put(x2, y, '>', fg); };
+  g.box = (x, y, w, h, fg, kind, label) => {
+    const c = B[kind || 'solid'];
+    for (let i = 1; i < w - 1; i++) { const ch = c.gap && i % 2 === 0 ? ' ' : c.h; g.put(x + i, y, ch, fg); g.put(x + i, y + h - 1, ch, fg); }
+    for (let j = 1; j < h - 1; j++) { g.put(x, y + j, c.v, fg); g.put(x + w - 1, y + j, c.v, fg); }
+    g.put(x, y, c.tl, fg); g.put(x + w - 1, y, c.tr, fg); g.put(x, y + h - 1, c.bl, fg); g.put(x + w - 1, y + h - 1, c.br, fg);
+    if (label) { g.put(x + 2, y, ' ', fg); const n = g.mtext(x + 3, y, label, 'fg', true); g.put(x + 3 + n, y, ' ', fg); }
+  };
+  g.bar = (x, y, w, r, fg) => {
+    const n = w - 2, f = Math.round(n * Math.max(0, Math.min(1, r)));
+    g.put(x, y, '[', 'mut');
+    for (let i = 0; i < n; i++) { if (i < f) g.put(x + 1 + i, y, '#', fg || 'a1', true); else g.put(x + 1 + i, y, i % 4 === 3 ? ':' : '.', 'mut'); }
+    g.put(x + w - 1, y, ']', 'mut');
+  };
+  g.meter = (x, y, w, r, fg) => {
+    const f = Math.max(1, Math.round(w * r));
+    for (let i = 0; i < w; i++) { if (i === 0) g.put(x, y, '@', fg, true); else if (i < f) g.put(x + i, y, '#', fg, true); else g.put(x + i, y, '.', 'dot'); }
+  };
+  return g;
+}
+
+/* A worker-style node: title, sub line, desc, divider, shell status, progress bar, badge. */
+function workerNode(g, x, y, w, id, desc, step, ratio, C) {
+  g.box(x, y, w, 9, ACTORS[id] === 'a2' ? 'a2' : ACTORS[id]);
+  const iw = w - 2;
+  g.center(x + 1, iw, y + 1, clip(C.N(id), iw), 'fg', true);
+  g.center(x + 1, iw, y + 2, '{lead:' + clip(C.N('lead'), 8) + '} · {a2:medium}');
+  g.center(x + 1, iw, y + 3, desc, 'dim');
+  g.hline(x + 2, y + 4, iw - 2, 'dot', true);
+  const st = step < 3 ? 'idle' : step === 3 ? 'running' : 'done';
+  g.text(x + 2, y + 5, '$ ' + st, step === 3 ? 'a2' : 'mut');
+  g.bar(x + 2, y + 6, iw - 2, step < 3 ? 0 : step === 3 ? ratio : 1, 'a2');
+  g.center(x + 1, iw, y + 7, step >= 4 ? '{a3b:[ok]}' : step === 3 ? '{a2:[>>]}' : '{m:[..]}');
+}
+
+/* Preset: fan-out / fan-in (lead -> router@table -> [3 workers] -> lead, router ..> lead : split) */
+function flowFan(g, step, D, C) {
+  const J = g.J;
+  const forks = C.forks, grow = Math.min(1, 0.35 + 0.65 * step);
+  g.box(39, 8, 47, 6, 'a1');
+  g.center(40, 45, 9, '{a1b:' + C.U('lead') + ' · main session}');
+  g.center(40, 45, 10, 'effort {bar:1:6:a1} {a2b:high} · ctx 1M');
+  g.center(40, 45, 11, 'plans + decides', 'dim');
+  g.put(62, 13, J.down, 'a1');
+  g.vline(62, 14, 2, 'mut');
+  g.put(86, 10, '<', 'mut'); g.hline(87, 10, 7, 'mut'); g.put(94, 10, J.tr, 'mut');
+  g.text(88, 11, 'split', 'a1'); g.vline(94, 11, 9, 'mut');
+  g.put(94, 20, J.br, 'mut'); g.hline(92, 20, 2, 'mut');
+
+  g.box(33, 16, 59, 9, 'a3', 'dbl');
+  g.put(62, 16, J.ddown, 'a3'); g.put(62, 24, J.dup, 'a3'); g.put(91, 20, J.dright, 'a3');
+  g.mtext(35, 17, '{a3b:' + clip(C.U('router'), 10) + '} · {a3b:fork layer} · one call · < 0.5 s');
+  g.right(89, 17, '{a3b:' + forks + ' forks}');
+  g.text(35, 18, 'fork', 'mut'); g.text(48, 18, 'p(top)', 'mut'); g.text(77, 18, 'route', 'mut');
+  [['which file', 'sharp', 'code'], ['which tool', 'split', C.N('lead')], ['retry/stop', 'split', C.N('lead')]].forEach((r, i) => {
+    const y = 19 + i, p = D.tr[i];
+    if (i === 0) { g.fillBg(34, y, 57, 'hlrow'); g.put(34, y, '>', 'a3', true); }
+    g.text(35, y, r[0], 'fg', true);
+    g.bar(48, y, 22, p * grow, 'a1');
+    g.text(71, y, p.toFixed(2), 'a2', true);
+    g.text(77, y, clip(r[1] + ' -> ' + r[2], 13), r[1] === 'sharp' ? 'fg' : 'a1', true);
+  });
+  g.hline(35, 22, 55, 'dot', true);
+  g.mtext(35, 23, '{a3b:sharp}: runs in code, ' + clip(C.N('lead'), 10) + ' never sees it');
+
+  g.put(62, 25, ':', 'mut');
+  g.center(33, 59, 26, 'delegate · 3 workers · {a2b:effort medium}');
+  g.hline(43, 27, 39, 'dot', true); g.put(42, 27, J.tl, 'mut'); g.put(62, 27, J.up, 'mut'); g.put(82, 27, J.tr, 'mut');
+  [42, 62, 82].forEach((cx) => g.put(cx, 28, 'v', 'mut'));
+  [['worker', 'edits + checks'], ['explorer', 'reads the code'], ['researcher', 'pulls the docs']].forEach((n, i) => workerNode(g, 33 + i * 20, 29, 19, n[0], n[1], step, [0.7, 0.45, 0.6][i], C));
+
+  [42, 62, 82].forEach((cx) => g.put(cx, 38, '|', 'mut'));
+  g.hline(43, 39, 39, 'dot', true); g.put(42, 39, J.bl, 'mut'); g.put(62, 39, J.down, 'mut'); g.put(82, 39, J.br, 'mut');
+  g.put(62, 40, 'v', 'mut');
+  g.box(44, 41, 37, 6, 'a1');
+  g.center(45, 35, 42, '{a1b:back to main session · high}');
+  g.center(45, 35, 43, 'review + verify', 'fg', true);
+  g.center(45, 35, 44, '{advisor:' + clip(C.N('advisor'), 10) + '} reviews · {lead:' + clip(C.N('lead'), 10) + '} ships');
+  g.center(45, 35, 45, '4 diffs · no edits until go', 'dim');
+  return { m1: 38, m2: 32, m3: 43 };
+}
+
+/* Preset: hub & spoke (lead <-> [router, worker, explorer, researcher], lead -> health@table) */
+function flowHub(g, step, D, C) {
+  const J = g.J;
+  const spoke = (x, y, w, id, desc) => {
+    g.box(x, y, w, 5, ACTORS[id]);
+    g.center(x + 1, w - 2, y + 1, clip(C.N(id), w - 2), ACTORS[id], true);
+    g.center(x + 1, w - 2, y + 2, desc, 'dim');
+    g.center(x + 1, w - 2, y + 3, step >= 2 ? '{a3b:[live]}' : '{m:[idle]}');
+  };
+  spoke(50, 8, 27, 'router', 'routes every call');
+  g.put(63, 13, '^', 'mut'); g.put(63, 14, '|', 'mut'); g.put(63, 15, 'v', 'mut');
+  workerNode(g, 33, 16, 17, 'worker', 'edits files', step, 0.7, C);
+  g.arrowBoth(50, 53, 20, 'mut');
+  g.box(54, 16, 19, 9, 'a1', 'dbl');
+  g.center(55, 17, 17, '{a1b:' + clip(C.U('lead'), 15) + '}');
+  g.center(55, 17, 18, 'hub · 4 spokes', 'dim');
+  g.hline(56, 19, 15, 'dot', true);
+  g.center(55, 17, 20, 'effort {bar:1:6:a1}');
+  g.center(55, 17, 21, '{a2b:' + C.forks + '} msgs');
+  g.center(55, 17, 23, step >= 4 ? '{a3b:[synced]}' : '{a2:[routing]}');
+  g.arrowBoth(73, 76, 20, 'mut');
+  workerNode(g, 77, 16, 17, 'explorer', 'reads code', step, 0.45, C);
+  g.put(63, 25, '^', 'mut'); g.put(63, 26, '|', 'mut'); g.put(63, 27, 'v', 'mut');
+  spoke(50, 28, 27, 'researcher', 'pulls the docs');
+  g.put(63, 33, ':', 'mut');
+
+  g.box(33, 34, 61, 8, 'a3', 'dbl');
+  g.put(63, 34, J.ddown, 'a3');
+  g.mtext(35, 35, '{a3b:HEALTH} · 4 spokes · p95 latency');
+  g.right(91, 35, '{a3b:' + C.forks + ' msgs}');
+  g.text(35, 36, 'spoke', 'mut'); g.text(48, 36, 'load', 'mut'); g.text(71, 36, 'p95', 'mut'); g.text(79, 36, 'state', 'mut');
+  ['router', 'worker', 'explorer', 'researcher'].forEach((id, i) => {
+    const y = 37 + i, p = D.hub[i];
+    if (i === 0) { g.fillBg(34, y, 59, 'hlrow'); g.put(34, y, '>', 'a3', true); }
+    g.text(35, y, clip(C.N(id), 12), ACTORS[id], true);
+    g.bar(48, y, 22, p, 'a1');
+    g.text(71, y, Math.round(20 + p * 180) + 'ms', 'a2', true);
+    g.text(79, y, p > 0.65 ? 'busy' : 'ok', p > 0.65 ? 'a1' : 'fg', true);
+  });
+  g.box(44, 42, 37, 5, 'a2');
+  g.center(45, 35, 43, '{a2b:on call · ' + clip(C.N('advisor'), 12) + '}');
+  g.center(45, 35, 44, 'alerts only when a spoke stalls', 'dim');
+  g.center(45, 35, 45, '0 pages · last 24h', 'fg');
+  return { m1: 49, m2: 32, m3: 43 };
+}
+
+function compose(g, step, D, flow, N) {
+  const J = g.J, W = g.W;
+  const U = (id) => N(id).toUpperCase();
+  const forks = (D.fork0 + step * 137).toLocaleString('en-US');
+  const C = { N, U, forks };
+
+  /* header (legend + command line are generated from actors) */
+  g.center(0, W, 1, 'AGENT PIPELINE · {a1b:' + clip(U('lead'), 12) + '} WORKS · {a2b:' + clip(U('advisor'), 12) + '} ON CALL', 'fg', true);
+  g.divider(1, 2, 94, 'dot');
+  g.center(0, W, 2, '{fgb:=/##/=}');
+  g.center(0, W, 3, '{a1:[#]} ' + clip(N('lead'), 10) + ' high    {a1:[#]} workers medium    {a1:[#]} ' + clip(N('router'), 10) + ' forks    {a1:[#]} ' + clip(N('advisor'), 10) + ' on call', 'fg');
+  g.center(0, W, 4, '{a2b:> /' + clip(N('advisor'), 12) + ' on}      Advisor set to {a2b:on call}', 'dim');
+
+  /* steps breadcrumb */
+  const parts = STEPS.map((s, i) => (i < step ? { t: '+ ' + s, k: 'done' } : i === step ? { t: ' / ' + s + ' ', k: 'cur' } : { t: (i + 1) + ' ' + s, k: 'todo' }));
+  let x = Math.floor((W - (parts.reduce((a, p) => a + p.t.length, 0) + 5 * (parts.length - 1))) / 2);
+  parts.forEach((p, i) => {
+    if (i > 0) { g.text(x, 6, '  >  ', 'mut'); x += 5; }
+    if (p.k === 'done') { g.put(x, 6, '+', 'a3', true); g.text(x + 1, 6, p.t.slice(1), 'a3'); }
+    else if (p.k === 'cur') g.text(x, 6, p.t, 'a2', true, 'hlstep');
+    else { g.text(x, 6, p.t, 'dim'); g.put(x, 6, p.t[0], 'mut'); }
+    x += p.t.length;
+  });
+
+  /* side column */
+  g.box(1, 8, 28, 39, 'a2');
+  g.vline(3, 11, 35, 'dot', ':');
+  g.center(2, 26, 9, '{a2b:' + clip(U('advisor'), 12) + ' · on call}');
+  g.center(2, 26, 10, 'watches · reads it all', 'dim');
+  const ms = (y, label, q, a) => { g.text(2, y, '<>', 'a2', true); g.text(5, y, label, 'fg', true); g.text(5, y + 1, q, 'fg'); g.text(5, y + 2, '» ' + a, 'a2'); };
+  ms(11, 'before a plan', 'right approach?', 'run migration first');
+  g.text(5, 16, 'listening', 'mut');
+  D.pulse.forEach((on, k) => { const px = 5 + 2 * k; g.put(px, 19, '+', 'a2', true); if (on) { g.put(px, 18, '|', 'a2'); g.put(px, 20, '|', 'a2'); } });
+  g.text(5, 23, 'reads every tool'); g.text(5, 24, 'call and result');
+  g.text(5, 26, 'calls'); g.right(24, 26, '{a2b:' + [2, 6, 9, 14, 18, 22, 24][step] + '}');
+  g.text(5, 27, 'tokens'); g.right(24, 27, '{a2b:' + D.tokens + '}');
+  g.text(5, 29, 'silent on every'); g.text(5, 30, 'routine turn');
+  g.text(5, 32, 'never writes code');
+  ms(35, 'error again', 'wrong place?', 'stop retrying');
+  ms(43, 'before done', 'what did I miss?', 'add 1 test');
+
+  /* flow preset; returns the x each milestone arrow must reach (its target node's left border - 1) */
+  const t = flow === 'hub' ? flowHub(g, step, D, C) : flowFan(g, step, D, C);
+  g.arrowR(29, t.m1, 11, 'mut', true);
+  g.arrowR(29, t.m2, 35, 'mut', true);
+  g.arrowR(29, t.m3, 43, 'mut', true);
+
+  /* timeline (rows = actors) */
+  g.box(1, 48, 94, 10, 'mut', 'dash', 'session timeline');
+  const TX = 14, TW = 79, col = (f) => TX + Math.round(f * (TW - 1));
+  const BND = [0, 0.2, 0.34, 0.5, 0.64, 0.78, 0.9, 1];
+  const cur = col((BND[step] + BND[step + 1]) / 2);
+  const ACT = [
+    ['advisor', [[0.08, 0.1, '<>'], [0.66, 0.68, '<>'], [0.9, 0.92, '<>']]],
+    ['lead', [[0, 0.19, '#'], [0.44, 0.48, '#'], [0.53, 0.56, '#'], [0.58, 0.63, '#'], [0.82, 1, '#']]],
+    ['router', 'pulse'],
+    ['worker', [[0.5, 0.6, '='], [0.6, 0.7, 'x'], [0.7, 0.78, '=']]],
+    ['explorer', [[0.5, 0.68, '=']]],
+    ['researcher', [[0.5, 0.78, '=']]]
+  ];
+  ACT.forEach(([id, segs], i) => {
+    const y = 49 + i, fg = ACTORS[id];
+    g.text(3, y, clip(N(id), 10), fg, true);
+    for (let c = 0; c < TW; c++) g.put(TX + c, y, '.', 'dot');
+    if (segs === 'pulse') { for (let c = col(0.22); c <= col(0.48); c++) { const on = ((c * D.rhash) % 10) > 3; g.put(c, y, on ? '|' : '.', on ? fg : 'dot'); } }
+    else segs.forEach(([a, b, sym]) => { if (sym === '<>') g.text(col(a), y, '<>', fg, true); else for (let c = col(a); c <= col(b); c++) g.put(c, y, sym, fg, true); });
+    g.put(cur, y, '|', 'fg', true, 'hlcur');
+  });
+  g.hline(TX, 55, TW, 'dot');
+  BND.forEach((f) => g.put(col(f), 55, J.up, 'mut'));
+  g.put(cur, 55, '^', 'a2', true);
+  STEPS.forEach((s, i) => { const a = col(BND[i]), b = col(BND[i + 1]); g.text(Math.floor((a + b - s.length) / 2) + 1, 56, s, i === step ? 'fg' : 'dim', i === step); });
+
+  /* log tail (generated: actor + step -> line) */
+  const LOG = [
+    ['23:58', 'lead', 'session start · 6 actors online', 0],
+    ['23:59', 'advisor', 'listening · reads every tool call', 0],
+    ['00:00', 'lead', 'plan: check agents, draft missing, diff', 0],
+    ['00:00', 'advisor', 'advising · before a plan -> reviewed', 0],
+    ['00:01', 'lead', 'fork: route 3 questions', 1],
+    ['00:02', 'router', 'which file  explorer.md  0.84 {a3b:sharp ->}', 1],
+    ['00:04', 'lead', 'delegate · 3 workers · effort medium', 2],
+    ['00:06', 'worker', 'edits + checks · 2 files touched', 3],
+    ['00:09', 'lead', 'merge · review + verify', 4],
+    ['00:10', 'advisor', 'advising · before done -> reviewed', 5],
+    ['00:11', 'lead', '4 diffs ready · no edits until go', 5],
+    ['00:12', 'lead', 'ship · tests green · done', 6]
+  ];
+  g.box(1, 59, 62, 8, 'mut', 'dash', 'tail -f session.log');
+  const vis = LOG.filter((l) => l[3] <= step).slice(-6);
+  vis.forEach((l, i) => {
+    const y = 60 + i, last = i === vis.length - 1;
+    if (last) g.fillBg(2, y, 60, 'logrow');
+    g.text(3, y, l[0], 'mut');
+    g.text(9, y, clip(N(l[1]), 9), ACTORS[l[1]], true);
+    const n = g.mtext(19, y, l[2]);
+    if (last) g.put(19 + n, y, '_', 'fg', true, null, 'blink');
+  });
+
+  /* meter list */
+  g.box(64, 59, 31, 8, 'mut', 'dash', 'who sees what');
+  const mg = Math.min(1, 0.4 + 0.3 * step);
+  [['router', 'every fork'], ['lead', 'splits only'], ['advisor', '3 moments']].forEach((m, i) => {
+    const y = 60 + i * 2;
+    g.text(66, y, clip(N(m[0]), 7), ACTORS[m[0]], true);
+    g.meter(74, y, 19, D.met[i] * mg, ACTORS[m[0]]);
+    g.text(74, y + 1, m[1], 'dim');
+  });
+
+  /* prompt + status bar */
+  g.put(1, 68, '>', 'a2', true);
+  g.put(3, 68, '█', 'fg', false, null, 'blink');
+  const ws = Math.max(0, Math.min(3, step - 2));
+  g.mtext(1, 69, 'step [{a2b:' + STEPS[step] + '}]   effort [{a1b:high}]   workers [{a2b:' + ws + '/3}]   ' + clip(N('advisor'), 10) + ' [{a2b:on call}]   ' + clip(N('router'), 10) + ' [{a3b:' + forks + '}]', 'dim');
+  g.put(94, 69, '|/-\\'[step % 4], 'dim');
+}
+
+/* Merge same-style cells into spans; plain spaces join any neighbouring span. */
+function toRows(g, th, blink) {
+  return g.cells.map((row) => {
+    const segs = []; let cur = null;
+    row.forEach((c) => {
+      const k = c.k === 'blink' && blink ? 'adg-blink' : '';
+      if (c.ch === ' ' && !c.bg && !k && cur && !cur.hasBg && !cur.k) { cur.t += ' '; return; }
+      const key = c.fg + '|' + (c.bg || '') + '|' + (c.b ? 1 : 0) + '|' + k;
+      if (cur && cur.key === key) { cur.t += c.ch; return; }
+      cur = { key, t: c.ch, k, hasBg: !!c.bg, st: 'color:' + (th[c.fg] || th.fg) + (c.bg ? ';background:' + th[c.bg] : '') + (c.b ? ';font-weight:700' : '') };
+      segs.push(cur);
+    });
+    return { segs };
+  });
+}
+
+/* Self-check: every row must be exactly W cells and free of double-width glyphs. */
+function selfCheck(rows, W) {
+  const wide = /[ᄀ-ᅟ⺀-꓏가-힣豈-﫿＀-｠￠-￦]|\p{Extended_Pictographic}/u;
+  rows.forEach((r, y) => {
+    const line = r.segs.map((s) => s.t).join('');
+    if (Array.from(line).length !== W || wide.test(line)) console.warn('[ascii-gen] row ' + y + ' has wrong width:', line);
+  });
+}
+
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const th = palette(THEMES[p.theme] || THEMES.midnight);
+    const step = Math.max(0, Math.min(6, Number(p.step ?? 1) || 0));
+    const fs = Number(p.fontSize ?? 12.5);
+    const lh = Number(p.lineHeight ?? 1.5);
+    const font = p.font ?? 'JetBrains Mono';
+    const chrome = p.chrome ?? true;
+    const win = p.win ?? 'macos';
+    const names = p.names || {};
+    const N = (id) => String(names[id] || id).replace(/[{}*]/g, '').trim() || id;
+    const W = 96, H = 70;
+    const g = makeGrid(W, H, (p.border ?? 'ascii') === 'unicode');
+    compose(g, step, dataFor(Number(p.seed ?? 0)), p.flow ?? 'fan', N);
+    const rows = toRows(g, th, p.blink ?? true);
+    selfCheck(rows, W);
+    const isPaper = (p.theme ?? 'midnight') === 'paper';
+    const isCrt = chrome && win === 'crt';
+    const winBar = mix('#000000', th.bg, 0.3);
+    const shadow = '0 1.6em 3.2em rgba(0,0,0,.35)';
+    return {
+      rows,
+      isMac: chrome && win === 'macos', isWin: chrome && win === 'windows', isUbuntu: chrome && win === 'ubuntu', isCrt,
+      scanline: p.scanline ?? false,
+      macTitle: '~/agent-pipeline - zsh - ' + W + 'x' + H,
+      ubuTitle: 'you@host: ~/agent-pipeline',
+      credit: 'made by @you',
+      outerStyle: isCrt
+        ? 'display:inline-block;vertical-align:top;font-size:' + fs + 'px;font-family:\'' + font + '\',monospace;padding:2.6em 2.6em 0;border-radius:2em;background:linear-gradient(#34312d,#1f1d1b);box-shadow:' + shadow + ',inset 0 0.15em 0 rgba(255,255,255,.08)'
+        : 'display:inline-block;vertical-align:top;font-size:' + fs + 'px;font-family:\'' + font + '\',monospace',
+      screenStyle: 'background:' + th.bg + ';color:' + th.fg + ';overflow:hidden;' + (isCrt
+        ? 'border-radius:1.6em;box-shadow:inset 0 0 4.5em rgba(0,0,0,.55),0 0 0 0.35em #121110'
+        : 'border-radius:' + (chrome ? (win === 'windows' ? 0.5 : win === 'ubuntu' ? 0.9 : 0.7) : 0.4) + 'em;box-shadow:' + shadow + ',0 0 0 1px ' + th.line),
+      barStyle: 'display:grid;grid-template-columns:1fr auto 1fr;align-items:center;height:2.6em;padding:0 1em;background:' + th.chrome + ';border-bottom:1px solid ' + th.line + ';font-family:system-ui,sans-serif',
+      titleStyle: 'font-family:\'' + font + '\',monospace;font-size:.9em;color:' + th.dim + ';white-space:nowrap',
+      ubuTitleStyle: 'font-size:.95em;font-weight:700;color:' + th.fg + ';white-space:nowrap',
+      creditStyle: 'justify-self:end;font-size:.72em;color:' + th.mut + ';white-space:nowrap',
+      mutStyle: 'color:' + th.mut,
+      winBarStyle: 'display:flex;align-items:flex-end;gap:.4em;height:2.8em;padding:0 0 0 .6em;background:' + winBar + ';font-family:system-ui,sans-serif',
+      winTabStyle: 'display:flex;align-items:center;gap:.7em;height:2.2em;padding:0 .9em;border-radius:.5em .5em 0 0;background:' + th.bg + ';color:' + th.fg + ';font-size:.9em',
+      winIconStyle: 'display:grid;place-items:center;width:1.5em;height:1.2em;border-radius:.2em;background:' + th.line + ';color:' + th.a2 + ';font-family:\'' + font + '\',monospace;font-size:.7em;font-weight:700',
+      winPlusStyle: 'display:grid;place-items:center;height:2.2em;padding:0 .5em;color:' + th.dim + ';font-size:.95em',
+      capStyle: 'display:grid;place-items:center;width:3.6em;height:100%;color:' + th.dim,
+      gnomeBtnStyle: 'display:grid;place-items:center;width:2em;height:1.8em;border-radius:.4em;background:' + th.line + ';color:' + th.fg,
+      gnomeCircleStyle: 'display:grid;place-items:center;width:1.5em;height:1.5em;border-radius:50%;background:' + th.line + ';color:' + th.fg,
+      gnomeCloseStyle: 'display:grid;place-items:center;width:1.5em;height:1.5em;border-radius:50%;background:#e95420;color:#ffffff',
+      preStyle: 'font-family:\'' + font + '\',monospace;font-variant-ligatures:none;font-feature-settings:"liga" 0,"calt" 0' + ((p.glow ?? false) ? ';text-shadow:0 0 .55em color-mix(in srgb,currentColor 55%,transparent)' : ''),
+      rowStyle: 'white-space:pre;height:' + lh + 'em;line-height:' + lh + 'em',
+      scanStyle: 'position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(to bottom,rgba(0,0,0,' + (isPaper ? 0.06 : 0.22) + ') 0,rgba(0,0,0,' + (isPaper ? 0.06 : 0.22) + ') 1px,transparent 1px,transparent 3px)'
+    };
+  }
+}
+</script>
+</body>
+</html>

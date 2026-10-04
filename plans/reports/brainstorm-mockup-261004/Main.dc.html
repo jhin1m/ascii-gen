@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>ASCII Dashboard Generator · desktop</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;700&amp;family=IBM+Plex+Mono:wght@400;700&amp;family=Fira+Code:wght@400;700&amp;family=VT323&amp;display=swap">
+<style>
+body{margin:0;background:#0d0f14}
+a{color:#ecd67a}a:hover{color:#f6e7a6}
+button,select,input,textarea{font-family:inherit}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #0d0f14; color: #d9dce5; font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 14px; display: flex; flex-direction: column">
+
+<header style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 20px; background: #12141b; border-bottom: 1px solid #242836">
+<div style="display: flex; align-items: center; gap: 12px; margin-right: 8px">
+<button aria-label="Thu gọn / mở panel" onClick="{{togglePanel}}" style="width: 40px; height: 40px; display: grid; place-items: center; background: transparent; color: #c3c7d2; border: 1px solid #2a2f3c; border-radius: 8px; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M9 4v16"></path></svg></button>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<div style="font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 15px; letter-spacing: 0.02em">ascii<span style="color: #ecd67a">/</span>dash</div>
+<div style="font-size: 11px; color: #8d93a5">ASCII Dashboard Generator</div>
+</div>
+</div>
+<label style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #8d93a5">Template
+<select defaultValue="pipeline" style="height: 40px; padding: 0 10px; background: #171a23; color: #d9dce5; border: 1px solid #2a2f3c; border-radius: 8px; font-size: 13px">
+<option value="pipeline">Agent pipeline</option>
+<option value="server">Server monitor</option>
+<option value="cicd">CI/CD build</option>
+<option value="blank">Trống</option>
+</select>
+</label>
+<div style="flex: 1 1 24px"></div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 4px; background: #171a23; border: 1px solid #242836; border-radius: 10px">
+<button aria-label="Bước trước" onClick="{{prev}}" style="width: 36px; height: 36px; display: grid; place-items: center; background: transparent; color: #c3c7d2; border: 0; border-radius: 7px; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg></button>
+<button onClick="{{togglePlay}}" style="height: 36px; padding: 0 14px; display: flex; align-items: center; gap: 8px; background: #ecd67a; color: #17181d; border: 0; border-radius: 7px; font-weight: 600; font-size: 13px; cursor: pointer">
+<sc-if value="{{playing}}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M8 5v14M16 5v14"></path></svg></sc-if>
+<sc-if value="{{paused}}" hint-placeholder-val="{{ true }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7z"></path></svg></sc-if>
+{{playLabel}}
+</button>
+<button aria-label="Bước sau" onClick="{{next}}" style="width: 36px; height: 36px; display: grid; place-items: center; background: transparent; color: #c3c7d2; border: 0; border-radius: 7px; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></button>
+<div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #c3c7d2; min-width: 92px">{{stepLabel}}</div>
+<label style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #8d93a5; padding-right: 8px">Tốc độ
+<input type="range" min="300" max="3000" step="100" value="{{speedVal}}" onChange="{{setSpeed}}" style="width: 96px; accent-color: #ecd67a">
+<span style="font-family: 'JetBrains Mono', monospace; color: #c3c7d2; min-width: 44px">{{speedLabel}}</span>
+</label>
+</div>
+<button onClick="{{randomize}}" style="height: 40px; padding: 0 14px; display: flex; align-items: center; gap: 8px; background: transparent; color: #d9dce5; border: 1px solid #2a2f3c; border-radius: 8px; font-size: 13px; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"></path></svg>Randomize</button>
+<button style="height: 40px; padding: 0 14px; display: flex; align-items: center; gap: 8px; background: transparent; color: #d9dce5; border: 1px solid #2a2f3c; border-radius: 8px; font-size: 13px; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"></path><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"></path></svg>Share link</button>
+<a href="Export.dc.html" style="height: 40px; padding: 0 16px; display: flex; align-items: center; gap: 8px; background: #ecd67a; color: #17181d; border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"></path></svg>Xuất</a>
+</header>
+
+<div style="display: flex; flex-wrap: wrap; flex: 1; align-items: stretch">
+
+<sc-if value="{{panel}}" hint-placeholder-val="{{ true }}">
+<aside style="flex: 1 1 360px; max-width: 440px; min-width: 0; background: #12141b; border-right: 1px solid #242836; display: flex; flex-direction: column">
+<div style="display: flex; gap: 4px; padding: 12px 16px 0; border-bottom: 1px solid #242836">
+<sc-for list="{{tabs}}" as="t" hint-placeholder-count="3">
+<button aria-pressed="{{t.pressed}}" onClick="{{t.pick}}" style="{{t.st}}">{{t.label}}</button>
+</sc-for>
+</div>
+
+<sc-if value="{{tabBlocks}}" hint-placeholder-val="{{ true }}">
+<div style="padding: 16px; display: flex; flex-direction: column; gap: 20px">
+
+<section style="display: flex; flex-direction: column; gap: 10px; padding: 14px; background: #171a23; border: 1px solid #242836; border-radius: 10px">
+<div style="display: flex; justify-content: space-between; align-items: baseline">
+<h2 style="margin: 0; font-size: 14px; font-weight: 600">Nguồn dữ liệu</h2>
+<button style="background: transparent; border: 0; color: #ecd67a; font-size: 12px; cursor: pointer; padding: 6px 0">+ Actor</button>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px">
+<sc-for list="{{actors}}" as="a" hint-placeholder-count="6">
+<div style="display: flex; align-items: center; gap: 8px; padding: 2px 6px 2px 10px; background: #0f1117; border: 1px solid #242836; border-radius: 8px">
+<span style="{{a.dot}}"></span>
+<input aria-label="Tên actor" maxLength="10" value="{{a.name}}" onChange="{{a.set}}" style="flex: 1; min-width: 0; height: 32px; background: transparent; color: #d9dce5; border: 0; font-family: 'JetBrains Mono', monospace; font-size: 12px">
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #8d93a5">{{a.slot}}</span>
+</div>
+</sc-for>
+</div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 4px; font-family: 'JetBrains Mono', monospace; font-size: 11px">
+<span style="font-family: 'IBM Plex Sans', sans-serif; font-size: 12px; color: #8d93a5; margin-right: 4px">Các bước</span>
+<sc-for list="{{steps}}" as="st" hint-placeholder-count="7"><span style="{{st.st}}">{{st.label}}</span></sc-for>
+</div>
+<div style="font-size: 12px; color: #8d93a5; line-height: 1.5">Đổi tên ở đây → header, node, timeline, log, meters, status bar tự cập nhật. Thử sửa “lead”.</div>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; justify-content: space-between; align-items: baseline">
+<h2 style="margin: 0; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #8d93a5">Bố cục · 7 hàng</h2>
+<button style="background: transparent; border: 0; color: #ecd67a; font-size: 12px; cursor: pointer; padding: 6px 0">+ Thêm hàng</button>
+</div>
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="7">
+<div style="display: flex; align-items: center; gap: 8px; padding: 6px 8px; background: #171a23; border: 1px solid #242836; border-radius: 8px">
+<span aria-hidden="true" style="color: #5d6375; display: grid; place-items: center; cursor: grab"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"></circle><circle cx="15" cy="6" r="1.6"></circle><circle cx="9" cy="12" r="1.6"></circle><circle cx="15" cy="12" r="1.6"></circle><circle cx="9" cy="18" r="1.6"></circle><circle cx="15" cy="18" r="1.6"></circle></svg></span>
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #5d6375; width: 14px">{{r.n}}</span>
+<div style="flex: 1; display: flex; gap: 6px; min-width: 0">
+<sc-for list="{{r.items}}" as="it" hint-placeholder-count="1">
+<span style="{{it.st}}"><span style="overflow: hidden; text-overflow: ellipsis">{{it.nm}}</span><span style="{{it.tagSt}}">{{it.tag}}</span></span>
+</sc-for>
+</div>
+<input type="checkbox" aria-label="Bật hàng" defaultChecked="{{ true }}" style="width: 16px; height: 16px; accent-color: #ecd67a">
+</div>
+</sc-for>
+<div style="display: flex; gap: 12px; font-size: 11px; color: #8d93a5"><span><span style="color: #8fd694; font-family: 'JetBrains Mono', monospace">auto</span> tự sinh từ nguồn dữ liệu</span><span><span style="color: #f2a272; font-family: 'JetBrains Mono', monospace">sửa tay ↺</span> bấm để sinh lại</span></div>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 12px; padding: 14px; background: #171a23; border: 1px solid #3a3a2a; border-radius: 10px">
+<div style="display: flex; justify-content: space-between; align-items: center">
+<h2 style="margin: 0; font-size: 14px; font-weight: 600">Flow · node graph</h2>
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #8d93a5">{{flowStats}}</span>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 12px; color: #8d93a5">Preset</span>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px">
+<sc-for list="{{presets}}" as="pr" hint-placeholder-count="2">
+<button aria-pressed="{{pr.pressed}}" onClick="{{pr.pick}}" style="{{pr.st}}">
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 10px; line-height: 1.25; white-space: pre; color: #8d93a5">{{pr.art}}</span>
+<span style="font-size: 12px; font-weight: 600">{{pr.label}}</span>
+</button>
+</sc-for>
+</div>
+</div>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: #8d93a5">Gõ nhanh · mỗi dòng một chuỗi
+<textarea value="{{dsl}}" onChange="{{noop}}" rows="3" spellcheck="false" style="padding: 10px; background: #0f1117; color: #ecd67a; border: 1px solid #2a2f3c; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.6; resize: vertical"></textarea>
+</label>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 12px; padding: 8px 10px; background: #0f1117; border: 1px dashed #2a2f3c; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #8d93a5">
+<span><span style="color: #d9dce5">a -&gt; b</span>  nối</span>
+<span><span style="color: #d9dce5">[a, b, c]</span>  song song</span>
+<span><span style="color: #d9dce5">a &lt;-&gt; [..]</span>  hub</span>
+<span><span style="color: #d9dce5">a ..&gt; b</span>  nét đứt</span>
+<span><span style="color: #d9dce5">x@table</span>  dạng bảng</span>
+<span><span style="color: #d9dce5">: nhãn</span>  chữ trên mũi tên</span>
+</div>
+<details style="background: #0f1117; border: 1px solid #242836; border-radius: 6px">
+<summary style="padding: 10px; cursor: pointer; font-size: 12px; color: #c3c7d2">Chi tiết node đang chọn · <span style="font-family: 'JetBrains Mono', monospace; color: #ecd67a">{{selName}}</span></summary>
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 0 10px 10px">
+<label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #8d93a5">Tiêu đề
+<input defaultValue="{a1b:LEAD · main session}" style="height: 36px; padding: 0 10px; background: #171a23; color: #d9dce5; border: 1px solid #2a2f3c; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 12px">
+</label>
+<label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #8d93a5">Nội dung (1–3 dòng)
+<textarea defaultValue="{{nodeLines}}" rows="3" style="padding: 8px 10px; background: #171a23; color: #d9dce5; border: 1px solid #2a2f3c; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.5; resize: vertical"></textarea>
+</label>
+</div>
+</details>
+</section>
+</div>
+</sc-if>
+
+<sc-if value="{{tabStyle}}" hint-placeholder-val="{{ false }}">
+<div style="padding: 16px; display: flex; flex-direction: column; gap: 20px">
+<section style="display: flex; flex-direction: column; gap: 8px">
+<h2 style="margin: 0; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #8d93a5">Theme</h2>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<sc-for list="{{themes}}" as="t" hint-placeholder-count="7">
+<button aria-pressed="{{t.pressed}}" onClick="{{t.pick}}" style="{{t.st}}">
+<span style="{{t.chip}}">
+<sc-for list="{{t.sw}}" as="w" hint-placeholder-count="6"><span style="{{w.st}}"></span></sc-for>
+</span>
+<span style="font-size: 12px; font-weight: 500">{{t.name}}</span>
+</button>
+</sc-for>
+</div>
+</section>
+<section style="display: flex; flex-direction: column; gap: 8px">
+<h2 style="margin: 0; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #8d93a5">Màu · chỉnh từng màu</h2>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px">
+<sc-for list="{{colors}}" as="c" hint-placeholder-count="9">
+<label style="display: flex; align-items: center; gap: 8px; padding: 4px 8px 4px 4px; background: #171a23; border: 1px solid #242836; border-radius: 8px; font-size: 11px; color: #c3c7d2">
+<input type="color" value="{{c.hex}}" onChange="{{noop}}" style="width: 28px; height: 28px; padding: 0; border: 0; background: transparent">{{c.label}}
+</label>
+</sc-for>
+</div>
+</section>
+<section style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+<label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #8d93a5">Font
+<select value="{{font}}" onChange="{{setFont}}" style="height: 36px; padding: 0 8px; background: #171a23; color: #d9dce5; border: 1px solid #2a2f3c; border-radius: 6px; font-size: 12px">
+<option value="JetBrains Mono">JetBrains Mono</option>
+<option value="IBM Plex Mono">IBM Plex Mono</option>
+<option value="Fira Code">Fira Code</option>
+<option value="VT323">VT323</option>
+</select>
+</label>
+<label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #8d93a5">Cỡ chữ · {{fsLabel}}
+<input type="range" min="9" max="16" step="0.5" value="{{fs}}" onChange="{{setFs}}" style="accent-color: #ecd67a; height: 36px">
+</label>
+</section>
+<section style="display: flex; flex-direction: column; gap: 8px">
+<h2 style="margin: 0; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #8d93a5">Kiểu viền</h2>
+<div style="display: flex; gap: 6px">
+<button aria-pressed="{{asciiOn}}" onClick="{{setAscii}}" style="{{asciiSt}}">ASCII  +-|</button>
+<button aria-pressed="{{uniOn}}" onClick="{{setUni}}" style="{{uniSt}}">Unicode  ┌─│</button>
+</div>
+</section>
+<section style="display: flex; flex-direction: column; gap: 8px">
+<h2 style="margin: 0; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #8d93a5">Hiệu ứng</h2>
+<label style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: #171a23; border: 1px solid #242836; border-radius: 8px; font-size: 13px">Scanline CRT<input type="checkbox" checked="{{scan}}" onChange="{{toggleScan}}" style="width: 18px; height: 18px; accent-color: #ecd67a"></label>
+<label style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: #171a23; border: 1px solid #242836; border-radius: 8px; font-size: 13px">Glow chữ<input type="checkbox" checked="{{glow}}" onChange="{{toggleGlow}}" style="width: 18px; height: 18px; accent-color: #ecd67a"></label>
+<label style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: #171a23; border: 1px solid #242836; border-radius: 8px; font-size: 13px">Con trỏ nhấp nháy<input type="checkbox" checked="{{blink}}" onChange="{{toggleBlink}}" style="width: 18px; height: 18px; accent-color: #ecd67a"></label>
+</section>
+</div>
+</sc-if>
+
+<sc-if value="{{tabJson}}" hint-placeholder-val="{{ false }}">
+<div style="padding: 16px; display: flex; flex-direction: column; gap: 10px">
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: #8d93a5">Toàn bộ config
+<textarea value="{{json}}" onChange="{{noop}}" rows="30" spellcheck="false" style="padding: 12px; background: #0f1117; color: #c3c7d2; border: 1px solid #2a2f3c; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.55; resize: vertical"></textarea>
+</label>
+<div style="display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #8fd694">✓ JSON hợp lệ · render 4 ms</div>
+<div style="display: flex; gap: 8px">
+<button style="flex: 1; height: 40px; background: #ecd67a; color: #17181d; border: 0; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer">Áp dụng</button>
+<button style="flex: 1; height: 40px; background: transparent; color: #d9dce5; border: 1px solid #2a2f3c; border-radius: 8px; font-size: 13px; cursor: pointer">Định dạng lại</button>
+</div>
+</div>
+</sc-if>
+</aside>
+</sc-if>
+
+<main style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding: 10px 20px; border-bottom: 1px solid #242836; background: #101218">
+<div style="display: flex; align-items: center; gap: 8px">
+<span style="font-size: 12px; color: #8d93a5">Cửa sổ</span>
+<div style="display: flex; gap: 4px">
+<sc-for list="{{wins}}" as="w" hint-placeholder-count="4"><button aria-pressed="{{w.pressed}}" onClick="{{w.pick}}" style="{{w.st}}">{{w.label}}</button></sc-for>
+</div>
+</div>
+<div style="display: flex; align-items: center; gap: 8px">
+<span style="font-size: 12px; color: #8d93a5">Cột</span>
+<div style="display: flex; gap: 4px">
+<sc-for list="{{cols}}" as="c" hint-placeholder-count="4"><button aria-pressed="{{c.pressed}}" onClick="{{c.pick}}" style="{{c.st}}">{{c.label}}</button></sc-for>
+</div>
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #8d93a5">× 70 dòng</span>
+</div>
+<div style="flex: 1"></div>
+<span style="display: flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: #16241b; color: #8fd694; font-family: 'JetBrains Mono', monospace; font-size: 11px">✓ self-check · 70/70 dòng đúng 96 cột</span>
+</div>
+<div style="flex: 1; overflow: auto; padding: 32px; display: flex; justify-content: center; align-items: flex-start; background-color: #0a0b0f; background-image: radial-gradient(#1b1e27 1px, transparent 1px); background-size: 18px 18px">
+<dc-import name="Terminal" theme="{{theme}}" win="{{win}}" flow="{{preset}}" names="{{names}}" step="{{step}}" seed="{{seed}}" glow="{{glow}}" scanline="{{scan}}" blink="{{blink}}" border="{{border}}" font="{{font}}" font-size="{{fs}}" hint-size="760px,1380px"></dc-import>
+</div>
+</main>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1560}}'>
+const STEPS = ['plan', 'fork', 'delegate', 'work', 'merge', 'review', 'ship'];
+const THEMES = [
+  { id: 'midnight', name: 'Midnight', c: ['#1b1e2b', '#e6e8f0', '#6c7189', '#f27eb5', '#ecd67a', '#7dd8d0', '#8fd694', '#a99cf5', '#f2a272'] },
+  { id: 'dracula', name: 'Dracula', c: ['#282a36', '#f8f8f2', '#6d7cb0', '#ff79c6', '#f1fa8c', '#8be9fd', '#50fa7b', '#bd93f9', '#ffb86c'] },
+  { id: 'gruvbox', name: 'Gruvbox', c: ['#282828', '#ebdbb2', '#928374', '#d3869b', '#fabd2f', '#8ec07c', '#b8bb26', '#83a598', '#fe8019'] },
+  { id: 'solarized', name: 'Solarized Dark', c: ['#002b36', '#eee8d5', '#6f8b93', '#e05a9c', '#d3a400', '#2aa198', '#9cb300', '#8a8fe0', '#e0662a'] },
+  { id: 'phosphor', name: 'Phosphor Green', c: ['#07110a', '#b9ffc8', '#3f7d4f', '#62ff8a', '#d2ff70', '#4fffd0', '#2cff63', '#9effb3', '#c4ff9a'] },
+  { id: 'amber', name: 'Amber CRT', c: ['#140c03', '#ffd89e', '#8f5d1f', '#ffb000', '#ffd04d', '#ff9a1f', '#ffe28a', '#e8a24a', '#ff7a1a'] },
+  { id: 'paper', name: 'Light Paper', c: ['#f5f1e6', '#26251f', '#7a7466', '#b8336a', '#9a6f00', '#1c7a80', '#3b833b', '#5a4fc0', '#b8561c'] }
+];
+const COLOR_LABELS = ['Nền', 'Chữ', 'Chữ phụ', 'Nhấn 1', 'Nhấn 2', 'Nhấn 3', 'Nhấn 4', 'Nhấn 5', 'Nhấn 6'];
+const ACTOR_IDS = [['advisor', 'a2'], ['lead', 'a1'], ['router', 'a3'], ['worker', 'a2'], ['explorer', 'a2'], ['researcher', 'a2']];
+const ROWS = [
+  [['Window chrome', '']], [['Header', 'auto']], [['Steps', 'auto']],
+  [['Side column', 'sửa tay ↺'], ['Flow', 'preset', true]], [['Timeline', 'auto']],
+  [['Log tail', 'auto'], ['Meters', 'auto']], [['Status bar', 'auto']]
+];
+const WINS = [['macos', 'macOS'], ['windows', 'Windows'], ['ubuntu', 'Ubuntu'], ['crt', 'Retro CRT']];
+const PRESETS = {
+  fan: { label: 'Fan-out / fan-in', art: '  [a]\n ┌─┼─┐\n[b][c][d]\n └─┼─┘\n  [e]' },
+  hub: { label: 'Hub & spoke', art: '  [b]\n   │\n[c]─[a]─[d]\n   │\n  [e]' }
+};
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      tab: 'blocks', theme: 'midnight', win: 'macos', preset: 'fan', step: 1, playing: false, speed: 1200,
+      glow: false, scan: false, blink: true, border: 'ascii', panel: true, cols: 96, font: 'JetBrains Mono', fs: 12.5, seed: 0,
+      names: { advisor: 'advisor', lead: 'lead', router: 'router', worker: 'worker', explorer: 'explorer', researcher: 'researcher' }
+    };
+    this.timer = null;
+  }
+  componentWillUnmount() { clearInterval(this.timer); }
+  startTimer(ms) { clearInterval(this.timer); this.timer = setInterval(() => this.setState((s) => ({ step: (s.step + 1) % STEPS.length })), ms); }
+  renderVals() {
+    const s = this.state;
+    const n = s.names;
+    const pill = (on) => 'height:34px;padding:0 12px;border:1px solid ' + (on ? '#ecd67a' : '#2a2f3c') + ';border-radius:7px;font-size:12px;cursor:pointer;font-family:\'JetBrains Mono\',monospace;background:' + (on ? '#ecd67a' : 'transparent') + ';color:' + (on ? '#17181d' : '#c3c7d2') + ';font-weight:' + (on ? 600 : 400);
+    const tabSt = (on) => 'height:40px;padding:0 14px;background:transparent;border:0;border-bottom:2px solid ' + (on ? '#ecd67a' : 'transparent') + ';color:' + (on ? '#f1f2f6' : '#8d93a5') + ';font-size:13px;font-weight:' + (on ? 600 : 500) + ';cursor:pointer;margin-bottom:-1px';
+    const theme = THEMES.find((t) => t.id === s.theme) || THEMES[0];
+    const slotHex = (slot) => theme.c[2 + Number(slot.slice(1))];
+    const dsl = s.preset === 'hub'
+      ? n.lead + ' <-> [' + [n.router, n.worker, n.explorer, n.researcher].join(', ') + ']\n' + n.lead + ' -> health@table\n' + n.advisor + ' ..> ' + n.lead + ' : on call'
+      : n.lead + ' -> ' + n.router + '@table -> [' + [n.worker, n.explorer, n.researcher].join(', ') + '] -> ' + n.lead + '\n' + n.router + ' ..> ' + n.lead + ' : split';
+    const tagColor = { auto: '#8fd694', preset: '#ecd67a', 'sửa tay ↺': '#f2a272' };
+    return {
+      panel: s.panel,
+      togglePanel: () => this.setState({ panel: !this.state.panel }),
+      playing: s.playing, paused: !s.playing, playLabel: s.playing ? 'Dừng' : 'Phát',
+      togglePlay: () => {
+        if (this.state.playing) { clearInterval(this.timer); this.setState({ playing: false }); }
+        else { this.startTimer(this.state.speed); this.setState({ playing: true }); }
+      },
+      prev: () => this.setState({ step: (this.state.step + STEPS.length - 1) % STEPS.length }),
+      next: () => this.setState({ step: (this.state.step + 1) % STEPS.length }),
+      stepLabel: (s.step + 1) + '/7 · ' + STEPS[s.step],
+      speedVal: 3300 - s.speed,
+      speedLabel: (s.speed / 1000).toFixed(1) + ' s',
+      setSpeed: (e) => { const ms = 3300 - Number(e.target.value); this.setState({ speed: ms }); if (this.state.playing) this.startTimer(ms); },
+      randomize: () => this.setState({ seed: 1 + Math.floor(Math.random() * 9998) }),
+      tabs: [['blocks', 'Khối'], ['style', 'Giao diện'], ['json', 'JSON']].map(([id, label]) => ({ label, pressed: s.tab === id ? 'true' : 'false', st: tabSt(s.tab === id), pick: () => this.setState({ tab: id }) })),
+      tabBlocks: s.tab === 'blocks', tabStyle: s.tab === 'style', tabJson: s.tab === 'json',
+      actors: ACTOR_IDS.map(([id, slot]) => ({
+        name: n[id], slot,
+        dot: 'width:10px;height:10px;border-radius:50%;flex:none;background:' + slotHex(slot),
+        set: (e) => { const v = e.target.value; this.setState({ names: Object.assign({}, this.state.names, { [id]: v }) }); }
+      })),
+      steps: STEPS.map((label, i) => ({ label, st: 'padding:3px 7px;border-radius:5px;' + (i === s.step ? 'background:#3a3620;color:#ecd67a' : 'background:#0f1117;color:#c3c7d2') })),
+      rows: ROWS.map((items, i) => ({
+        n: i + 1,
+        items: items.map(([nm, tag, active]) => ({
+          nm, tag,
+          tagSt: 'font-family:\'JetBrains Mono\',monospace;font-size:10px;color:' + (tagColor[tag] || '#8d93a5'),
+          st: 'flex:1 1 0;min-width:0;display:flex;justify-content:space-between;align-items:center;gap:6px;padding:6px 8px;border-radius:6px;font-size:12px;white-space:nowrap;overflow:hidden;background:' + (active ? '#2b2a1c' : '#1f222c') + ';color:' + (active ? '#ecd67a' : '#c3c7d2') + ';border:1px solid ' + (active ? '#5b5531' : 'transparent')
+        }))
+      })),
+      presets: Object.keys(PRESETS).map((id) => ({
+        label: PRESETS[id].label, art: PRESETS[id].art, pressed: s.preset === id ? 'true' : 'false',
+        pick: () => this.setState({ preset: id }),
+        st: 'display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px 8px;cursor:pointer;border-radius:8px;color:#d9dce5;background:#0f1117;border:1px solid ' + (s.preset === id ? '#ecd67a' : '#242836') + ';box-shadow:' + (s.preset === id ? '0 0 0 1px #ecd67a' : 'none')
+      })),
+      dsl,
+      flowStats: s.preset === 'hub' ? '1 hub · 4 spoke · 1 bảng' : '4 tầng · 6 node · 1 bảng',
+      selName: n.lead,
+      nodeLines: 'effort {bar:1:6:a1} {a2b:high} · ctx 1M\n{dim:plans + decides}',
+      themes: THEMES.map((t) => ({
+        name: t.name, pressed: s.theme === t.id ? 'true' : 'false',
+        pick: () => this.setState({ theme: t.id }),
+        st: 'display:flex;flex-direction:column;align-items:stretch;gap:8px;padding:8px;text-align:left;cursor:pointer;border-radius:8px;color:#d9dce5;background:#171a23;border:1px solid ' + (s.theme === t.id ? '#ecd67a' : '#242836') + ';box-shadow:' + (s.theme === t.id ? '0 0 0 1px #ecd67a' : 'none'),
+        chip: 'display:flex;gap:4px;padding:8px;border-radius:5px;background:' + t.c[0],
+        sw: t.c.slice(3).map((c) => ({ st: 'flex:1;height:10px;border-radius:2px;background:' + c }))
+      })),
+      colors: theme.c.map((hex, i) => ({ hex, label: COLOR_LABELS[i] })),
+      noop: () => {},
+      font: s.font, setFont: (e) => this.setState({ font: e.target.value }),
+      fs: s.fs, fsLabel: s.fs + 'px', setFs: (e) => this.setState({ fs: Number(e.target.value) }),
+      asciiOn: s.border === 'ascii' ? 'true' : 'false', uniOn: s.border === 'unicode' ? 'true' : 'false',
+      asciiSt: pill(s.border === 'ascii'), uniSt: pill(s.border === 'unicode'),
+      setAscii: () => this.setState({ border: 'ascii' }), setUni: () => this.setState({ border: 'unicode' }),
+      scan: s.scan, glow: s.glow, blink: s.blink,
+      toggleScan: () => this.setState({ scan: !this.state.scan }),
+      toggleGlow: () => this.setState({ glow: !this.state.glow }),
+      toggleBlink: () => this.setState({ blink: !this.state.blink }),
+      json: JSON.stringify({
+        grid: { cols: s.cols }, theme: s.theme, window: s.win, font: { family: s.font, size: s.fs, lineHeight: 1.5 },
+        border: s.border, effects: { scanline: s.scan, glow: s.glow, blink: s.blink }, seed: s.seed,
+        actors: ACTOR_IDS.map(([id, color]) => ({ id, name: n[id], color })),
+        steps: STEPS, current: s.step,
+        layout: [['chrome'], ['header'], ['steps'], [{ block: 'side', w: 0.3 }, { block: 'flow', w: 0.7 }], ['timeline'], [{ block: 'log', w: 0.62 }, { block: 'meters', w: 0.38 }], ['status']],
+        blocks: { flow: { preset: s.preset, dsl: dsl.split('\n') }, side: { auto: false, items: ['…'] }, log: { auto: true } }
+      }, null, 2),
+      wins: WINS.map(([id, label]) => ({ label, pressed: s.win === id ? 'true' : 'false', st: pill(s.win === id), pick: () => this.setState({ win: id }) })),
+      cols: [80, 96, 120, 'Tuỳ'].map((c) => ({ label: String(c), pressed: s.cols === c ? 'true' : 'false', st: pill(s.cols === c), pick: () => this.setState({ cols: c }) })),
+      theme: s.theme, win: s.win, preset: s.preset, names: n, step: s.step, seed: s.seed, border: s.border
+    };
+  }
+}
+</script>
+</body>
+</html>
