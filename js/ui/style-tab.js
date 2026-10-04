@@ -19,7 +19,7 @@
   function colors(s, api) {
     const pal = ADG.store.palette(s), over = s.colors || {};
     return h('div', { class: 'color-grid' }, ADG.theme.BASE_KEYS.map((k) => h('label', { class: 'color-field' + (over[k] ? ' changed' : '') },
-      h('input', { type: 'color', value: pal[k], 'data-focus': 'color-' + k, onchange: (e) => api.set({ colors: Object.assign({}, over, { [k]: e.target.value }) }) }),
+      h('input', { type: 'color', value: pal[k], 'data-focus': 'color-' + k, onchange: (e) => api.set({ colors: Object.assign({}, api.get().colors, { [k]: e.target.value }) }) }),
       LABELS[k])));
   }
 
@@ -46,8 +46,9 @@
       h('section', { class: 'sect-flat' }, h('h2', null, 'Hiệu ứng'),
         [['scanline', 'Scanline CRT'], ['glow', 'Glow chữ'], ['blink', 'Con trỏ nhấp nháy']].map(([k, label]) =>
           h('label', { class: 'check row-check' }, label, h('input', { type: 'checkbox', checked: !!s[k], 'data-focus': 'fx-' + k, onchange: (e) => api.set({ [k]: e.target.checked }) })))));
-    draw(api.get());
-    return (s, changed) => { if (KEYS.some((k) => changed[k])) draw(s); };
+    const redraw = ADG.dom.section(root, () => draw(api.get()));
+    redraw();
+    return (s, changed) => { if (KEYS.some((k) => changed[k])) redraw(); };
   }
 
   ADG.styleTab = { mount };

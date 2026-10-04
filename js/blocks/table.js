@@ -64,7 +64,7 @@
     schema: [
       { key: 'title', label: 'Tiêu đề (markup)', type: 'text' },
       { key: 'right', label: 'Bộ đếm bên phải (markup)', type: 'text' },
-      { key: 'cols', label: 'Tên cột: tên | thanh | tuyến', type: 'list', fields: ['text'] },
+      { key: 'cols', label: 'Tên cột: mỗi dòng 1 cột (tên, thanh, tuyến)', type: 'list', fields: ['text'] },
       { key: 'rows', label: 'Dòng: tên | tỉ lệ 0..1 | tuyến (markup) | giá trị', type: 'list', fields: ['name', 'ratio', 'route', 'value'] },
       { key: 'highlight', label: 'Dòng nổi bật (0 = đầu, -1 = không)', type: 'number', min: -1, max: 20 },
       { key: 'note', label: 'Ghi chú cuối (markup)', type: 'text' },

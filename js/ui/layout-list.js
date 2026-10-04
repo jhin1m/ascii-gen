@@ -19,6 +19,9 @@
   function mount(root, api) {
     let addType = 'header';
 
+    // handlers re-read the state when they run (an edit committed on blur may have just landed)
+    const now = () => { const s = api.get(); return { layout: Array.isArray(s.layout) ? s.layout : [], blocks: isObj(s.blocks) ? s.blocks : {} }; };
+
     function draw(s) {
       const layout = Array.isArray(s.layout) ? s.layout : [], blocks = isObj(s.blocks) ? s.blocks : {};
       const setLayout = (l, extra) => api.set(Object.assign({ layout: l }, extra || {}));
@@ -32,6 +35,7 @@
           const ratio = items.length > 1 ? h('input', { type: 'number', class: 'num ratio', min: 0.1, max: 10, step: 0.05, 'aria-label': 'Tỉ lệ cột ' + key,
             'data-focus': 'ratio-' + i + '-' + j, value: String(typeof it === 'object' && it.w ? it.w : 1),
             onchange: (e) => {
+              const { layout, blocks } = now(); const items = rowList(layout[i] || []);
               const w = Number(e.target.value);
               if (!(w > 0 && w <= 10)) return api.toast('Tỉ lệ phải trong (0, 10].', 'error');
               const r = items.map((x, k) => (k === j ? { block: key, w } : x));
@@ -46,28 +50,34 @@
           h('span', { class: 'mono mut small row-n' }, String(i + 1)),
           h('div', { class: 'chips' }, chips),
           h('input', { type: 'checkbox', 'aria-label': 'Hiện hàng ' + (i + 1), checked: visible, 'data-focus': 'row-vis-' + i, onchange: (e) => {
+            const { layout, blocks } = now(); const items = rowList(layout[i] || []);
             const next = Object.assign({}, blocks);
             items.forEach((it) => { const k = keyOf(it); if (isObj(next[k])) next[k] = Object.assign({}, next[k], { hidden: !e.target.checked }); });
             api.set({ blocks: next });
           } }),
           h('button', { class: 'btn btn-icon btn-sm', type: 'button', 'aria-label': 'Đưa hàng ' + (i + 1) + ' lên', disabled: i === 0, onclick: () => {
-            const l = layout.slice(); [l[i - 1], l[i]] = [l[i], l[i - 1]]; setLayout(l);
+            const l = now().layout.slice();
+            if (i > 0 && i < l.length) { [l[i - 1], l[i]] = [l[i], l[i - 1]]; setLayout(l); }
           } }, '↑'),
           h('button', { class: 'btn btn-icon btn-sm', type: 'button', 'aria-label': 'Đưa hàng ' + (i + 1) + ' xuống', disabled: i === layout.length - 1, onclick: () => {
-            const l = layout.slice(); [l[i + 1], l[i]] = [l[i], l[i + 1]]; setLayout(l);
+            const l = now().layout.slice();
+            if (i + 1 < l.length) { [l[i + 1], l[i]] = [l[i], l[i + 1]]; setLayout(l); }
           } }, '↓'),
           h('button', { class: 'btn btn-icon btn-sm', type: 'button', 'aria-label': 'Xoá hàng ' + (i + 1), onclick: () => {
+            const { layout, blocks } = now(); const items = rowList(layout[i] || []);
             const l = layout.filter((_, k) => k !== i), next = Object.assign({}, blocks);
             const used = new Set([].concat(...l.map((r) => rowList(r).map(keyOf))));
             items.forEach((it) => { if (!used.has(keyOf(it))) delete next[keyOf(it)]; });
             setLayout(l, { blocks: next });
+            api.toast('Đã xoá hàng ' + (i + 1), 'ok', { label: 'Hoàn tác', run: () => api.set({ layout, blocks }) });
           } }, '×'));
       });
       const types = ADG.blocks.types().filter((t) => t !== 'table');
       const add = h('div', { class: 'opt-row' },
         h('select', { 'aria-label': 'Loại khối cho hàng mới', 'data-focus': 'add-type', onchange: (e) => { addType = e.target.value; } },
           types.map((t) => h('option', { value: t, selected: t === addType }, ADG.blocks.get(t).label))),
-        h('button', { class: 'btn btn-sm', type: 'button', disabled: layout.length >= 40, onclick: () => {
+        h('button', { class: 'btn btn-sm', type: 'button', disabled: layout.length >= 40 || Object.keys(blocks).length >= 40, onclick: () => {
+          const { layout, blocks } = now();
           const key = newKey(addType, blocks), cfg = {};
           if (key !== addType) cfg.type = addType;
           if (ADG.generators.hasGenerator(addType)) cfg.auto = true;
@@ -81,8 +91,9 @@
           h('span', { class: 'tag tag-manual' }, 'sửa tay ↺'), ' bấm khối rồi ↺ để sinh lại · ', h('span', { class: 'tag tag-preset' }, 'preset'), ' sơ đồ flow'));
     }
 
-    draw(api.get());
-    return (s, changed) => { if (changed.layout || changed.blocks || changed.selected) draw(s); };
+    const redraw = ADG.dom.section(root, () => draw(api.get()));
+    redraw();
+    return (s, changed) => { if (changed.layout || changed.blocks || changed.selected) redraw(); };
   }
 
   ADG.layoutList = { mount, newKey };

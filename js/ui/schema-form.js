@@ -70,7 +70,7 @@
       ? h('p', { class: 'mut small' }, 'Sơ đồ được chỉnh ở mục Flow bên dưới.')
       : form(b.def, shown, 'bf-' + key + '-', (k, v) => api.editBlock(key, { [k]: v }));
     const common = h('div', { class: 'opt-row' },
-      h('label', { class: 'check' }, h('input', { type: 'checkbox', 'data-focus': 'bf-hidden-' + key, checked: !b.cfg.hidden, onchange: (e) => api.setBlock(key, Object.assign({}, b.cfg, { hidden: !e.target.checked })) }), ' Hiển thị'));
+      h('label', { class: 'check' }, h('input', { type: 'checkbox', 'data-focus': 'bf-hidden-' + key, checked: !b.cfg.hidden, onchange: (e) => { const cur = api.blockOf(key); if (cur) api.setBlock(key, Object.assign({}, cur.cfg, { hidden: !e.target.checked })); } }), ' Hiển thị'));
     ADG.dom.replace(root, head, note, common, body);
   }
 

@@ -68,6 +68,7 @@
       h('button', { type: 'button', class: 'btn btn-sm', 'aria-pressed': String(custom), onclick: () => { const el = byId('cols-custom'); el.hidden = false; el.focus(); } }, 'Tuỳ'));
     const el = byId('cols-custom');
     if (custom) el.hidden = false;
+    else if (document.activeElement !== el) el.hidden = true;
     if (document.activeElement !== el) el.value = String(s.cols);
   }
 

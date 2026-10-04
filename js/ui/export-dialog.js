@@ -33,11 +33,12 @@
 
   function syncControls() {
     const s = api.getState();
+    const put = (id, v) => { if (document.activeElement !== $(id)) $(id).value = v; }; // never overwrite what the user is typing
     $('opt-chrome').checked = s.chrome;
     $('opt-win').value = s.win; $('opt-win').disabled = !s.chrome;
     $('opt-font').value = s.font;
-    $('opt-size').value = s.size;
-    $('opt-credit').value = s.credit;
+    put('opt-size', s.size);
+    put('opt-credit', s.credit);
     $('opt-glow').checked = s.glow;
     $('opt-scanline').checked = s.scanline;
     document.querySelectorAll('#png-scales [data-scale]').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.scale) === scale)));

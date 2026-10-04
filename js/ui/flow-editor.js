@@ -31,10 +31,12 @@
     let key = null, pick = null, els = null, shown = null; // shown = DSL last written into the textarea
     const block = () => (key ? api.get().blocks[key] : null);
     const actorIds = () => (api.get().actors || []).map((a) => a.id);
-    const dslOf = (b) => String(b.dsl || '').trim() || ADG.flowPresets.presetDsl(b.preset || 'fan', actorIds());
+    // the stored text as typed (not trimmed): comparing it with the textarea must not eat a newline
+    const dslOf = (b) => (String(b.dsl || '').trim() ? String(b.dsl) : ADG.flowPresets.presetDsl(b.preset || 'fan', actorIds()));
     const put = (patch) => api.setBlock(key, Object.assign({}, block(), patch));
 
     const commit = ADG.dom.debounce(() => {
+      if (!els || !block()) return; // the flow block went away meanwhile
       const text = els.dsl.value, r = check(text);
       els.err.textContent = r.error || '';
       els.err.hidden = !r.error;
@@ -65,7 +67,7 @@
       const cur = dslOf(b);
       ADG.dom.replace(els.cards, ADG.flowPresets.ids().map((id) => {
         const dsl = ADG.flowPresets.presetDsl(id, actorIds());
-        return h('button', { type: 'button', class: 'preset-card', 'aria-pressed': String(cur === dsl), onclick: () => {
+        return h('button', { type: 'button', class: 'preset-card', 'aria-pressed': String(cur.trim() === dsl), onclick: () => {
           commit.cancel();
           put({ dsl, preset: id });
         } }, h('pre', { class: 'mono', 'aria-hidden': 'true' }, ADG.flowPresets.art(id)), h('span', null, ADG.flowPresets.label(id)));
@@ -78,7 +80,11 @@
       if (keys.indexOf(pick) < 0) pick = keys[0];
       const node = r.graph.nodes.find((n) => n.key === pick), nodes = isObj(b.nodes) ? b.nodes : {};
       const data = isObj(nodes[pick]) ? nodes[pick] : {};
-      const save = (patch) => put({ nodes: Object.assign({}, nodes, { [pick]: Object.assign({}, data, patch) }) });
+      const key0 = pick;
+      const save = (patch) => { // read the node data now: two quick edits must not overwrite each other
+        const cur = isObj(block().nodes) ? block().nodes : {};
+        put({ nodes: Object.assign({}, cur, { [key0]: Object.assign({}, isObj(cur[key0]) ? cur[key0] : {}, patch) }) });
+      };
       const select = h('select', { 'aria-label': 'Node', 'data-focus': 'node-pick', onchange: (e) => { pick = e.target.value; nodeForm(block(), r); } },
         keys.map((k) => h('option', { value: k, selected: k === pick }, k)));
       const idInput = h('label', { class: 'field-col' }, 'Id mốc (cột bên nối tới id này)',

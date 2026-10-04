@@ -31,6 +31,14 @@ module.exports = ({ ADG, test, assert, sandbox }) => {
     assert.deq(C.fromLines('lead high\n\nworkers', { fields: ['text'] }, ['x']), ['lead high', 'workers']);
   });
 
+  test('list codec: deleting or inserting a line never moves hidden fields to another item', () => {
+    const field = { fields: ['actor', 'pattern'] };
+    const rows = [{ actor: 'lead', pattern: '##', color: 'a1' }, { actor: 'worker', pattern: '..##', color: 'a4' }];
+    assert.deq(C.fromLines('worker | ..##', field, rows), [{ actor: 'worker', pattern: '..##', color: 'a4' }]);
+    assert.deq(C.fromLines('new | #\nlead | ##\nworker | ..##', field, rows)[0], { actor: 'new', pattern: '#' });
+    assert.deq(C.fromLines('lead | ###\nworker | ..##', field, rows)[0], { actor: 'lead', pattern: '###', color: 'a1' }, 'edited line keeps its own');
+  });
+
   test('list codec: side-column variants by kind', () => {
     const f = ADG.blocks.get('side-column').schema.find((x) => x.key === 'items');
     const items = [{ kind: 'milestone', title: 't', q: 'q?', a: 'a', link: 'lead', snap: false }, { kind: 'kv', k: 'calls', v: '6' }, { kind: 'gap', n: 2 }];

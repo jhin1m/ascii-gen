@@ -43,11 +43,12 @@
   function mount(api) {
     const narrow = typeof matchMedia === 'function' && matchMedia('(max-width: 720px)').matches;
     if (narrow) document.querySelectorAll('#panel details.sect').forEach((d) => { d.open = false; });
-    const blockForm = () => {
+    const blockForm = ADG.dom.section(byId('block-form'), () => {
       const key = api.selected(), b = key && api.blockOf(key);
       byId('block-title').textContent = b ? 'Khối · ' + b.def.label : 'Khối';
       ADG.schemaForm.mountBlockForm(byId('block-form'), api, key);
-    };
+    });
+    const autoSelected = () => { const b = api.selected() && api.blockOf(api.selected()); return !!b && b.cfg.auto === true; };
     const ups = [
       ADG.dataSourceForm.mount(byId('data-source'), api),
       ADG.layoutList.mount(byId('layout-list'), api),
@@ -56,12 +57,13 @@
     ];
     const json = ADG.jsonTab.mount(byId('tab-json'), api);
     blockForm();
-    tabs((t) => { if (t === 'json') json(); });
+    tabs((t) => { if (t === 'json') json(true); else json.reset(); });
     collapse();
     return (s, changed) => {
       ups.forEach((u) => u(s, changed));
-      if (changed.blocks || changed.selected || changed.layout || (changed.step && api.selected())) blockForm();
-      if (!changed.render) json();
+      // generated content of an auto block can depend on the step
+      if (changed.blocks || changed.selected || changed.layout || (changed.step && autoSelected())) blockForm();
+      if (!changed.render && Object.keys(changed).some((k) => k !== 'step')) json();
     };
   }
 

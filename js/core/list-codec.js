@@ -35,21 +35,35 @@
     }).join('\n');
   }
 
-  /** Text → items; extra properties of the item at the same position are kept (color, snap, …). */
+  /**
+   * Text → items. Properties the form does not show (color, snap, …) come from the old item whose
+   * line is unchanged, or — when the number of lines is unchanged — from the item at the same
+   * position (an edited line). Inserting or deleting lines never moves them to another item.
+   */
   function fromLines(text, field, old) {
     old = Array.isArray(old) ? old : [];
-    return String(text).split('\n').filter((l) => l.trim() !== '').map((line, i) => {
+    const lines = String(text).split('\n').filter((l) => l.trim() !== '');
+    const oldLines = old.map((it) => toLines([it], field)), used = new Set();
+    const source = (line, i) => {
+      let j = oldLines.findIndex((l, k) => l === line && !used.has(k));
+      if (j < 0 && lines.length === old.length && !used.has(i)) j = i;
+      if (j < 0) return null;
+      used.add(j);
+      return isObj(old[j]) ? old[j] : null;
+    };
+    const plain = !field.variants && field.fields.length === 1 && !old.some(isObj); // plain strings (legend, cols)
+    return lines.map((line, i) => {
       const c = cells(line);
-      if (!field.variants && field.fields.length === 1 && !isObj(old[i])) return c.join(' | '); // plain strings (legend, cols)
+      if (plain) return c.join(' | ');
+      const prev = source(line, i);
       let item;
       if (field.variants) {
         const kind = Object.prototype.hasOwnProperty.call(field.variants, c[0]) ? c[0] : 'note';
-        const base = isObj(old[i]) && old[i].kind === kind ? Object.assign({}, old[i]) : {};
-        item = Object.assign(base, { kind });
+        item = Object.assign(prev && prev.kind === kind ? Object.assign({}, prev) : {}, { kind });
         field.variants[kind].forEach((k, j) => { const v = c[j + 1]; if (v === undefined || v === '') delete item[k]; else item[k] = value(k, v); });
         if (!field.variants[c[0]] && c[0]) item.text = c.join(' | '); // unknown kind: keep the text as a note
       } else {
-        item = isObj(old[i]) ? Object.assign({}, old[i]) : {};
+        item = prev ? Object.assign({}, prev) : {};
         field.fields.forEach((k, j) => { const v = c[j]; if (v === undefined || v === '') delete item[k]; else item[k] = value(k, v); });
       }
       return item;

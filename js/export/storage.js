@@ -14,7 +14,12 @@
   function load() {
     try {
       const s = store(), raw = s && s.getItem(KEY);
-      return raw ? ADG.configFile.parse(raw) : null;
+      if (!raw) return null;
+      // keep every valid key: one bad value must not throw away the whole saved work
+      try { return ADG.configFile.validate(JSON.parse(raw), { lenient: true }); } catch (e) {
+        try { s.setItem(KEY + ':bad', raw); } catch (e2) { /* full: the copy is best effort */ }
+        throw e;
+      }
     } catch (e) {
       console.warn('[ascii-gen] autosave not loaded:', e && e.message);
       return null;

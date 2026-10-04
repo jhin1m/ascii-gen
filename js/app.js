@@ -23,7 +23,10 @@
     return cfg.blocks[key];
   }
 
+  /** Flow block the flow editor edits: the selected one, else the first in the layout. */
   function flowKey() {
+    const sel = selected && blockOf(selected);
+    if (sel && sel.type === 'flow') return selected;
     const s = store.get();
     for (const row of s.layout || []) {
       for (const it of Array.isArray(row) ? row : [row]) {
@@ -50,7 +53,7 @@
     selected: () => selected,
     select(key) {
       selected = key;
-      update(store.get(), { selected: true });
+      queueUi({ selected: true });
       const b = blockOf(key);
       ADG.panel.reveal(b && b.type === 'flow' ? 'flow-sect' : 'block-sect');
     },
@@ -59,6 +62,24 @@
   };
 
   let update = () => {};
+
+  // Panel updates run after the current event, and not while a pointer is down: a commit-on-blur
+  // that rebuilds a section between mousedown and click would swallow the click.
+  let uiPending = null, pointerDown = false;
+  function flushUi() {
+    if (!uiPending || pointerDown) return;
+    const changed = uiPending;
+    uiPending = null;
+    update(store.get(), changed);
+  }
+  function queueUi(changed) {
+    const first = !uiPending;
+    uiPending = Object.assign(uiPending || {}, changed);
+    if (first) setTimeout(flushUi, 0);
+  }
+  document.addEventListener('pointerdown', () => { pointerDown = true; }, true);
+  document.addEventListener('pointerup', () => { setTimeout(() => { pointerDown = false; flushUi(); }, 0); }, true);
+  document.addEventListener('pointercancel', () => { pointerDown = false; flushUi(); }, true);
 
   /** Draw the player's current frame (coalesced to one per animation frame). */
   function requestRender() {
@@ -75,16 +96,17 @@
     const res = ADG.preview.render(s, p.playing ? p.step : s.step, p.t, p.playing);
     lastRender = res.out;
     const key = JSON.stringify(res.out.skipped);
-    if (key !== skippedKey) { skippedKey = key; update(s, { render: true }); }
+    if (key !== skippedKey) { skippedKey = key; queueUi({ render: true }); }
     after.splice(0).forEach((fn) => fn());
   }
 
   function syncHeader(s, changed) {
     const p = player.state(), n = (s.steps || []).length;
-    const step = p.playing ? p.step : s.step;
-    byId('step-label').textContent = n ? (step + 1) + '/' + n + ' · ' + s.steps[step] : '—';
-    byId('play').textContent = p.playing ? 'Dừng' : 'Phát';
-    byId('play').setAttribute('aria-pressed', String(p.playing));
+    const step = Math.min(n - 1, p.playing ? p.step : s.step);
+    const label = n ? (step + 1) + '/' + n + ' · ' + s.steps[step] : '—';
+    if (byId('step-label').textContent !== label) byId('step-label').textContent = label; // aria-live: announce changes only
+    const play = p.playing ? 'Dừng' : 'Phát';
+    if (byId('play').textContent !== play) byId('play').textContent = play;
     if (!changed || changed.speed) {
       byId('speed').value = String(ADG.player.MAX_MS + ADG.player.MIN_MS - s.speed); // right = faster
       byId('speed-label').textContent = (s.speed / 1000).toFixed(1) + ' s/bước';
@@ -94,14 +116,18 @@
   }
 
   function onChange(s, changed) {
+    const n = (s.steps || []).length;
+    if (n && s.step >= n) { store.set({ step: n - 1 }); return; } // a removed step / foreign config: clamp first
     if ((changed.steps || changed.step) && player.state().step !== s.step) player.sync(s.step);
     if (changed.speed) player.setSpeed(s.speed);
     if (changed.loop) player.setLoop(s.loop);
-    update(s, changed);
+    queueUi(changed);
     syncHeader(s, changed);
     requestRender();
     ADG.storage.save(s);
-    ADG.exportDialog.refresh();
+    // the player moves the step every second: the dialog (share link, typed fields) must not churn
+    const stepOnly = Object.keys(changed).every((k) => k === 'step');
+    if (!(stepOnly && player.state().playing)) ADG.exportDialog.refresh();
   }
 
   /** Paused frame at the current step, for the export dialog. */
@@ -114,8 +140,11 @@
     const before = ADG.configFile.wrap(store.get());
     selected = null;
     store.set(ADG.templateList.content(id));
-    toast('Đã chuyển sang ' + ADG.templateList.label(id), 'ok', { label: 'Hoàn tác', run: () => store.set(ADG.configFile.validate(before)) });
+    toast('Đã chuyển sang ' + ADG.templateList.label(id), 'ok', undo(before));
   }
+
+  /** Toast action that brings back a wrapped state. */
+  const undo = (before) => ({ label: 'Hoàn tác', run: () => { selected = null; store.set(ADG.configFile.validate(before, { lenient: true })); } });
 
   async function shareQuick() {
     try {
@@ -136,9 +165,10 @@
     try {
       const patch = ADG.configFile.validate(await ADG.share.decode(token));
       if (mine !== hashSeq) return; // a newer link was opened meanwhile
+      const before = ADG.configFile.wrap(store.get());
       selected = null;
       store.set(patch);
-      toast('Đã mở cấu hình từ share link', 'ok');
+      toast('Đã mở cấu hình từ share link', 'ok', undo(before));
     } catch (e) {
       if (mine === hashSeq) toast('Share link không hợp lệ: ' + e.message, 'error');
     }

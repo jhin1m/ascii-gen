@@ -11,7 +11,9 @@
   const bool = (v) => (typeof v === 'boolean' ? v : undefined);
   const oneOf = (list) => (v) => (typeof v === 'string' && list().indexOf(v) >= 0 ? v : undefined);
   const isObj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
-  const ID = /^[A-Za-z0-9_-]{1,24}$/;
+  // ids become object keys: names of Object.prototype members would set the prototype instead
+  const ID_RE = /^[A-Za-z0-9_-]{1,24}$/, PROTO = ['__proto__', 'constructor', 'prototype'];
+  const ID = { test: (v) => typeof v === 'string' && ID_RE.test(v) && PROTO.indexOf(v) < 0 };
   const MAX_BLOCKS_JSON = 200 * 1024;
   const shortStr = (max) => (v) => typeof v === 'string' && v.length <= max;
 
@@ -67,10 +69,11 @@
   }
 
   /**
-   * Validate an untrusted object and return the state patch it describes.
+   * Validate an untrusted object and return the state patch it describes. With { lenient: true }
+   * invalid keys are dropped instead of failing the whole object (autosave, undo).
    * @throws {Error} with a Vietnamese message when the shape or a value is invalid
    */
-  function validate(obj) {
+  function validate(obj, opts) {
     if (!obj || typeof obj !== 'object' || Array.isArray(obj)) throw new Error('Cấu hình không hợp lệ (cần một đối tượng JSON).');
     if (!Number.isInteger(obj.version) || obj.version < 1) throw new Error('Cấu hình thiếu hoặc sai "version".');
     if (obj.version > VERSION) throw new Error('Cấu hình từ phiên bản mới hơn (v' + obj.version + '); hãy cập nhật trang.');
@@ -80,7 +83,9 @@
       const v = FIELDS[k](obj[k]);
       if (v === undefined) bad.push(k); else patch[k] = v;
     });
-    if (bad.length) throw new Error('Giá trị không hợp lệ: ' + bad.join(', ') + '.');
+    if (bad.length && !(opts && opts.lenient)) throw new Error('Giá trị không hợp lệ: ' + bad.join(', ') + '.');
+    // a step past the end of its own step list points at nothing
+    if (Array.isArray(patch.steps) && patch.step !== undefined) patch.step = Math.max(0, Math.min(patch.steps.length - 1, patch.step));
     return patch;
   }
 
