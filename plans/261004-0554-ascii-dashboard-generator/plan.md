@@ -1,7 +1,7 @@
 ---
 title: "ASCII Dashboard Generator"
 description: "Web app tĩnh (không framework/build) tạo dashboard terminal vẽ bằng ký tự, tuỳ chỉnh và xuất PNG/GIF/MP4/text/share link"
-status: pending
+status: in-progress
 priority: P1
 effort: "55h"
 tags: [frontend, vanilla-js, canvas, export]
@@ -43,7 +43,7 @@ Nguồn quyết định: [brainstorm report](../reports/brainstorm-261004-1235-a
 
 | # | Phase | Status |
 |---|-------|--------|
-| 1 | [Phase 1: Core grid, markup, theme, HTML output](./phase-01-start.md) | Pending |
+| 1 | [Phase 1: Core grid, markup, theme, HTML output](./phase-01-start.md) | Completed |
 | 2 | [Phase 2: Layout engine and blocks](./phase-02-layout-engine-and-blocks.md) | Pending |
 | 3 | [Phase 3: Flow DSL and presets](./phase-03-flow-dsl-and-presets.md) | Pending |
 | 4 | [Phase 4: Generators, randomize, player](./phase-04-generators-randomize-and-player.md) | Pending |

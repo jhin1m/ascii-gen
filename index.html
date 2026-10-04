@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ASCII Dashboard Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&amp;family=IBM+Plex+Mono:wght@400;700&amp;family=Fira+Code:wght@400;700&amp;family=VT323&amp;display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="app-bar">
+  <h1 class="app-title">ASCII Dashboard Generator</h1>
+  <label class="field">Chủ đề <select id="theme-select"></select></label>
+  <label class="field">Viền
+    <select id="border-select">
+      <option value="ascii">ASCII (+-|)</option>
+      <option value="unicode">Unicode (┌─┐)</option>
+    </select>
+  </label>
+  <label class="field"><input type="checkbox" id="emoji-toggle"> Chèn emoji (thử self-check)</label>
+  <span id="check-status" class="check-status"></span>
+</header>
+<main class="stage">
+  <div id="screen" class="adg-screen"><div id="preview" class="adg-pre"></div></div>
+</main>
+
+<!-- order = dependency order: core → output → app -->
+<script src="js/core/text-utils.js"></script>
+<script src="js/core/theme.js"></script>
+<script src="js/core/markup.js"></script>
+<script src="js/core/grid.js"></script>
+<script src="js/output/html-renderer.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

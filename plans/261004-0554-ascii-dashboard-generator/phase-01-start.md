@@ -1,7 +1,7 @@
 ---
 phase: 1
 title: "Phase 1: Core grid, markup, theme, HTML output"
-status: todo
+status: done
 priority: P1
 effort: "6h"
 dependencies: []
@@ -45,10 +45,16 @@ Dựng khung dự án + lõi render: buffer ô ký tự, primitives vẽ, markup
 8. Tests: primitives đúng ký tự/toạ độ, box 3 kiểu × 2 viền, markup lồng màu/bar, clip, NFC tiếng Việt, wide char → `?`
 
 ## Success Criteria
-- [ ] `node tests/run.js` pass
-- [ ] Mở `index.html` (file://) thấy 1 grid demo đủ box/bar/markup, đổi 7 theme đúng màu
-- [ ] Self-check 0 cảnh báo cho demo; chèn emoji → có cảnh báo, không vỡ cột
+- [x] `node tests/run.js` pass (48/48)
+- [x] Mở `index.html` (file://) thấy 1 grid demo đủ box/bar/markup, đổi 7 theme đúng màu
+- [x] Self-check 0 cảnh báo cho demo; chèn emoji → có cảnh báo, không vỡ cột
 
 ## Risk Assessment
 - Ligature Fira Code làm lệch cột HTML → CSS tắt liga/calt (kiểm tra bằng mắt ở phase 8)
 - Ký tự ambiguous width (`·`, `»`, `█`) — giữ danh sách ký tự an toàn; thêm vào test
+
+## Completion Notes (2026-10-04)
+- Thêm ngoài spec: `grid.blit(src,x,y)` (mang theo issues của grid con), `vline(..., ch)` ký tự tuỳ chọn, `toLines()`
+- Toạ độ/kích thước lẻ được floor; `{bar}` width cap 256; ký tự `\p{Cf}` bị loại, `\p{Zl}\p{Zp}\p{Cs}` → `?`
+- Phase 2: side column dùng `vline(..., ':')` ở cả 2 kiểu viền (giống ref.png)
+- Reports: `../reports/from-code-reviewer-to-main-phase-01-core-review-report.md`, `../reports/from-tester-to-main-phase-01-core-test-report.md`
