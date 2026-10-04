@@ -6,14 +6,14 @@ const vm = require('vm');
 const harness = require('./assert');
 
 const ROOT = path.join(__dirname, '..');
-// same order as the <script> tags in index.html
-const SOURCES = [
-  'js/core/text-utils.js',
-  'js/core/theme.js',
-  'js/core/markup.js',
-  'js/core/grid.js',
-  'js/output/html-renderer.js'
-];
+// Sources in the same order as the <script> tags of index.html, minus app/ui (they need a DOM).
+// Every other file must stay DOM-free at load time.
+const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8').replace(/<!--[\s\S]*?-->/g, '');
+const SOURCES = Array.from(html.matchAll(/<script\b[^>]*\bsrc="([^"]+)"/g))
+  .map((m) => m[1])
+  .filter((f) => /^js\//.test(f) && !/^js\/(app\.js|ui\/)/.test(f));
+if (!SOURCES.length) throw new Error('no sources found in index.html');
+SOURCES.forEach((f) => { if (!fs.existsSync(path.join(ROOT, f))) throw new Error('missing source ' + f); });
 
 const warnings = [];
 const sandboxConsole = { log: console.log, error: console.error, warn: (...a) => warnings.push(a) };

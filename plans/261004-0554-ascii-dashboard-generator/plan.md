@@ -44,7 +44,7 @@ Nguồn quyết định: [brainstorm report](../reports/brainstorm-261004-1235-a
 | # | Phase | Status |
 |---|-------|--------|
 | 1 | [Phase 1: Core grid, markup, theme, HTML output](./phase-01-start.md) | Completed |
-| 2 | [Phase 2: Layout engine and blocks](./phase-02-layout-engine-and-blocks.md) | Pending |
+| 2 | [Phase 2: Layout engine and blocks](./phase-02-layout-engine-and-blocks.md) | Completed |
 | 3 | [Phase 3: Flow DSL and presets](./phase-03-flow-dsl-and-presets.md) | Pending |
 | 4 | [Phase 4: Generators, randomize, player](./phase-04-generators-randomize-and-player.md) | Pending |
 | 5 | [Phase 5: Editor UI and persistence](./phase-05-editor-ui-and-persistence.md) | Pending |

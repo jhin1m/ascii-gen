@@ -19,18 +19,37 @@
       <option value="unicode">Unicode (┌─┐)</option>
     </select>
   </label>
-  <label class="field"><input type="checkbox" id="emoji-toggle"> Chèn emoji (thử self-check)</label>
+  <label class="field">Số cột
+    <select id="cols-select">
+      <option value="80">80</option>
+      <option value="96" selected>96</option>
+      <option value="120">120</option>
+    </select>
+  </label>
+  <label class="field">Bước <select id="step-select"></select></label>
   <span id="check-status" class="check-status"></span>
 </header>
 <main class="stage">
   <div id="screen" class="adg-screen"><div id="preview" class="adg-pre"></div></div>
 </main>
 
-<!-- order = dependency order: core → output → app -->
+<!-- order = dependency order: core → blocks → templates → output → app (tests/run.js reads this list) -->
 <script src="js/core/text-utils.js"></script>
 <script src="js/core/theme.js"></script>
 <script src="js/core/markup.js"></script>
 <script src="js/core/grid.js"></script>
+<script src="js/core/layout.js"></script>
+<script src="js/blocks/registry.js"></script>
+<script src="js/blocks/status.js"></script>
+<script src="js/blocks/header.js"></script>
+<script src="js/blocks/steps.js"></script>
+<script src="js/blocks/meters.js"></script>
+<script src="js/blocks/log.js"></script>
+<script src="js/blocks/table.js"></script>
+<script src="js/blocks/timeline.js"></script>
+<script src="js/blocks/side-column.js"></script>
+<script src="js/blocks/flow.js"></script>
+<script src="js/templates/agent-pipeline.js"></script>
 <script src="js/output/html-renderer.js"></script>
 <script src="js/app.js"></script>
 </body>

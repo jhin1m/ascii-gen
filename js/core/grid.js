@@ -15,10 +15,11 @@
       dbl: { tl: '╔', tr: '╗', bl: '╚', br: '╝', h: '═', v: '║' }
     }
   };
-  // Junctions for connecting lines onto box borders (down = ┬ on a top/bottom edge, d* = double edge).
+  // Junctions for connecting lines onto box borders: down = ┬ (stem below), up = ┴ (stem above),
+  // right = ├ (stem to the right), d* = the same on a double edge.
   const JUNCTIONS = {
-    ascii: { down: '+', up: '+', ddown: '+', dup: '+', dright: '+', tl: '+', tr: '+', bl: '+', br: '+', h: '-', dh: '-', v: '|', dv: ':', eq: '=' },
-    unicode: { down: '┬', up: '┴', ddown: '╤', dup: '╧', dright: '╟', tl: '┌', tr: '┐', bl: '└', br: '┘', h: '─', dh: '╌', v: '│', dv: '╎', eq: '═' }
+    ascii: { down: '+', up: '+', ddown: '+', dup: '+', right: '+', dright: '+', tl: '+', tr: '+', bl: '+', br: '+', h: '-', dh: '-', v: '|', dv: ':', eq: '=' },
+    unicode: { down: '┬', up: '┴', ddown: '╤', dup: '╧', right: '├', dright: '╟', tl: '┌', tr: '┐', bl: '└', br: '┘', h: '─', dh: '╌', v: '│', dv: '╎', eq: '═' }
   };
 
   function blankCell() { return { ch: ' ', fg: 'fg', bg: null, b: false, k: '' }; }

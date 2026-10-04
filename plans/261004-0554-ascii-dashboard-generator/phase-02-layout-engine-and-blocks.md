@@ -1,7 +1,7 @@
 ---
 phase: 2
 title: "Phase 2: Layout engine and blocks"
-status: todo
+status: done
 priority: P1
 effort: "10h"
 dependencies: [1]
@@ -49,11 +49,23 @@ composeLayout(config, cols) → grid
 5. Tests: widths cộng đúng, mọi dòng đúng `cols`, anchors đúng toạ độ sau blit, timeline resample giữ `<>`, render ở 80/96/120 không lỗi self-check
 
 ## Success Criteria
-- [ ] Agent pipeline 96 cột render giống mockup canvas (so mắt)
-- [ ] 80/120 cột: không vỡ khung, self-check 0
-- [ ] Bật/tắt 1 khối, đổi thứ tự hàng → layout tự tính lại số dòng
-- [ ] Tests pass
+- [x] Agent pipeline 96 cột render giống mockup canvas (so mắt) — 96×70, ảnh headless Chrome khớp phong cách ref.png
+- [x] 80/120 cột: không vỡ khung, self-check 0 (ascii + unicode, bước 0..6)
+- [x] Bật/tắt 1 khối, đổi thứ tự hàng → layout tự tính lại số dòng
+- [x] Tests pass (94/94)
 
 ## Risk Assessment
 - Side column cần y của node bên flow → render flow trước trong hàng (khối provider trước consumer, sort trong hàng theo `provides/consumes`)
 - 80 cột quá hẹp cho 3 node song song → flow tự hạ còn 2 cột/hàng hoặc clip; ghi lại hành vi trong schema help
+
+## Completion Notes (2026-10-04)
+- Block contract thêm `links: [{x, y, to}]` (consumer → anchor); `compose(config)` → `{grid, anchors, cols, rows}`; layout item = `'key'` hoặc `{block, w}`, `config.blocks[key].type` mặc định = key, `hidden: true` tắt khối
+- Lề 1 cột 2 bên, gap 1 cột / 1 dòng, đệm trên 1 dòng; tối đa 4 khối/hàng, 40 hàng, trang ≤ 400 dòng; list có giới hạn độ dài
+- Mũi tên link chỉ vẽ khi node cùng hàng layout, y nằm trong node, đường đi trống; ngược lại bỏ + `console.warn`
+- Milestone có `link` mặc định snap (tắt bằng `snap: false`)
+- `grid.JUNCTIONS.right` mới; hướng junction: rời viền dưới = ┬/╤, vào viền trên = ┴/╧
+- Màu từ config qua `util.slot()` (chỉ key palette); actor id trùng tag markup (`a1`, `dim`, `bar`, `a1b`…) bị loại
+- `tests/run.js` lấy danh sách nguồn từ `index.html` (trừ `app.js`, `js/ui/`)
+- Hoãn: định dạng dòng `list` cho editor (`|` trong pattern timeline, `\n` trong note) → Phase 5; token tên actor → Phase 4
+- Reports: `../reports/from-tester-to-main-phase-02-layout-blocks-test-report.md`, `../reports/from-code-reviewer-to-main-phase-02-layout-blocks-review-report.md`
+
