@@ -89,7 +89,7 @@ const MAX_AREA = 16777216; // Safari/iOS limit on total pixels (4096 × 4096)
     grid.cells.forEach((row, y) => {
       const base = gy + y * rowH + (rowH - (asc + desc)) / 2 + asc;
       row.forEach((c, x) => {
-        if (c.ch === ' ') return;
+        if (c.ch === ' ' || (o.blinkOff && c.k === 'blink')) return; // blinkOff: the off half of a blink (animation frames)
         const f = fontStr(o.font, o.size, c.b ? 700 : 400);
         if (f !== curFont) { ctx.font = f; curFont = f; }
         const color = pal[c.fg] || pal.fg;

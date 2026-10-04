@@ -1,7 +1,7 @@
 ---
 phase: 7
 title: "Phase 7: GIF and video export"
-status: todo
+status: completed
 priority: P2
 effort: "8h"
 dependencies: [4, 6]

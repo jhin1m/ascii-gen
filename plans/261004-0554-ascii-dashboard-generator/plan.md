@@ -49,7 +49,7 @@ Nguồn quyết định: [brainstorm report](../reports/brainstorm-261004-1235-a
 | 4 | [Phase 4: Generators, randomize, player](./phase-04-generators-randomize-and-player.md) | Completed |
 | 5 | [Phase 5: Editor UI and persistence](./phase-05-editor-ui-and-persistence.md) | Completed |
 | 6 | [Phase 6: Canvas output and exports](./phase-06-canvas-output-and-exports.md) | Completed |
-| 7 | [Phase 7: GIF and video export](./phase-07-gif-and-video-export.md) | Pending |
+| 7 | [Phase 7: GIF and video export](./phase-07-gif-and-video-export.md) | Completed |
 | 8 | [Phase 8: Visual QA and polish](./phase-08-visual-qa-and-polish.md) | Pending |
 
 Dependencies: 1 → 2 → 3 → 4 → 5; 6 cần 2 (chạy song song được với 3–5); 7 cần 4 + 6; 8 cần tất cả.

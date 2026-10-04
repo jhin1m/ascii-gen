@@ -87,6 +87,7 @@
     const token = ++seq;
     syncControls();
     $('text-preview').textContent = ADG.plainText.toPlainText(api.build().grid);
+    ADG.exportMotion.refresh();
     refreshSize(token);
     refreshShare(token);
   }
@@ -145,6 +146,7 @@
   function close() {
     $('export-overlay').hidden = true;
     document.body.classList.remove('modal-open');
+    ADG.exportMotion.cancel(); // a running GIF/video export stops with the dialog
     seq++;
     if (lastFocus && lastFocus.focus) lastFocus.focus();
   }
@@ -154,6 +156,7 @@
     const win = $('opt-win'), font = $('opt-font');
     ADG.windowChrome.WINDOWS.forEach((w) => win.add(new Option(ADG.windowChrome.LABELS[w], w)));
     ADG.canvasOut.FONTS.forEach((f) => font.add(new Option(f, f)));
+    ADG.exportMotion.init({ getState: () => api.getState(), build: () => api.build(), template: tpl, toast });
     $('export-open').addEventListener('click', open);
     $('export-close').addEventListener('click', close);
     $('export-overlay').addEventListener('mousedown', (e) => { if (e.target === $('export-overlay')) close(); });
