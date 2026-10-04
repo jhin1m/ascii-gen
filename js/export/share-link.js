@@ -3,7 +3,7 @@
    Node and can be tested with injected `deps` ({ TextEncoder, TextDecoder, CompressionStream, DecompressionStream }). */
 (function (ADG) {
   // Public URL of the deployed page (GitHub Pages). Empty = current page, which only works locally.
-  const SHARE_BASE = '';
+  const SHARE_BASE = 'https://jhin1m.github.io/ascii-gen/';
   const WARN_URL_LEN = 8 * 1024;
   const MAX_JSON = 1024 * 1024; // decompressed cap: guards against decompression bombs
   const ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
@@ -83,14 +83,18 @@
     try { return JSON.parse(raw); } catch (e) { throw new Error('Link bị hỏng (không phải JSON).'); }
   }
 
-  /** Page URL the link points at. file:// has no usable origin, so the full current URL is used. */
-  function baseUrl(loc) {
-    if (SHARE_BASE) return SHARE_BASE.replace(/#.*$/, '');
+  /**
+   * Page URL the link points at: the public page when `base` (default SHARE_BASE) is set, else the
+   * current page. file:// has no usable origin, so the full current URL is used.
+   */
+  function baseUrl(loc, base) {
+    base = base === undefined ? SHARE_BASE : base;
+    if (base) return base.replace(/#.*$/, '');
     if (loc.protocol === 'file:') return String(loc.href).replace(/#.*$/, '');
     return loc.origin + loc.pathname;
   }
 
-  const buildUrl = (token, loc) => baseUrl(loc) + '#c=' + token;
+  const buildUrl = (token, loc, base) => baseUrl(loc, base) + '#c=' + token;
 
   /** Token from a location.hash value ('#c=...'), or null when there is none. */
   function readHash(hash) {
@@ -98,10 +102,11 @@
     return m ? m[1] : null;
   }
 
-  function warnings(url, loc) {
+  function warnings(url, loc, base) {
+    base = base === undefined ? SHARE_BASE : base;
     const out = [];
     if (url.length > WARN_URL_LEN) out.push('Link dài ' + (url.length / 1024).toFixed(1) + ' KB (> 8 KB): một số ứng dụng có thể cắt cụt link.');
-    if (!SHARE_BASE && loc.protocol === 'file:') out.push('Đang mở từ file:// nên link chỉ mở được trên máy này (cần đưa trang lên web và điền SHARE_BASE).');
+    if (!base && loc.protocol === 'file:') out.push('Đang mở từ file:// nên link chỉ mở được trên máy này (cần đưa trang lên web và điền SHARE_BASE).');
     return out;
   }
 

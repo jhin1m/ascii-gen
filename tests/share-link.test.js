@@ -31,13 +31,19 @@ module.exports = ({ ADG, test, assert }) => {
   });
 
   test('buildUrl uses origin+path on http and the full URL on file://', () => {
-    assert.eq(S.buildUrl('T', { protocol: 'https:', origin: 'https://x.io', pathname: '/app/', href: 'https://x.io/app/#c=old' }), 'https://x.io/app/#c=T');
-    assert.eq(S.buildUrl('T', { protocol: 'file:', origin: 'null', pathname: '/a/index.html', href: 'file:///a/index.html#c=old' }), 'file:///a/index.html#c=T');
+    const web = { protocol: 'https:', origin: 'https://x.io', pathname: '/app/', href: 'https://x.io/app/#c=old' };
+    const file = { protocol: 'file:', origin: 'null', pathname: '/a/index.html', href: 'file:///a/index.html#c=old' };
+    assert.eq(S.buildUrl('T', web, ''), 'https://x.io/app/#c=T');
+    assert.eq(S.buildUrl('T', file, ''), 'file:///a/index.html#c=T');
+    // the deployed page: every link (also from file:// or localhost) opens the public site
+    assert.ok(/^https:\/\//.test(S.SHARE_BASE), 'SHARE_BASE is the public page');
+    assert.eq(S.buildUrl('T', file), S.SHARE_BASE + '#c=T');
   });
 
   test('warnings: file:// without SHARE_BASE and URLs over 8 KB', () => {
     const file = { protocol: 'file:' }, web = { protocol: 'https:' };
-    assert.eq(S.warnings('file:///a#c=x', file).length, 1);
+    assert.eq(S.warnings('file:///a#c=x', file, '').length, 1);
+    assert.eq(S.warnings('file:///a#c=x', file).length, 0, 'no warning once SHARE_BASE is set');
     assert.eq(S.warnings('https://x#c=x', web).length, 0);
     assert.eq(S.warnings('https://x#c=' + 'a'.repeat(S.WARN_URL_LEN), web).length, 1);
   });

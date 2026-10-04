@@ -69,7 +69,7 @@ State is one flat object: view options (`ADG.store.VIEW_DEFAULTS`: theme, colors
 | Share link | URL hash `#c=<token>` (`export/share-link.js`) | JSON -> deflate-raw (`CompressionStream`) -> base64url (pure JS). Decoded size capped at 1 MB. Warns above 8 KB URL, and on `file://` when `SHARE_BASE` is empty. |
 | File | `.json` download / upload | Same payload. |
 
-`SHARE_BASE` is a const at the top of `share-link.js` (currently `''`): the public URL of the deployed page (GitHub Pages) used to build links; empty means the current page, which only works locally.
+`SHARE_BASE` is a const at the top of `share-link.js` (`https://jhin1m.github.io/ascii-gen/`): the public URL of the deployed page (GitHub Pages) used to build links from any copy of the app (also `file://` / localhost); empty means the current page, which only works locally.
 
 Boot order (`app.js` `init`): `VIEW_DEFAULTS` + default template (`agent-pipeline`) <- autosave (sync) <- share hash (async `loadFromHash`, wins). The hash is removed from the URL immediately, and a sequence counter drops stale decodes. Template switch and share-link open show a toast with an undo action ("Hoàn tác") that restores the previous wrapped state through lenient validation.
 
