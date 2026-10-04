@@ -19,7 +19,7 @@
         if (o.onPath) o.onPath('webcodecs');
         return { blob: await ADG.videoWebCodecs.exportMp4(o), ext: 'mp4', path: 'webcodecs' };
       } catch (e) {
-        if (!e.fallback) throw e;
+        if (!e.fallback || (o.signal && o.signal.aborted)) throw e.fallback ? Object.assign(new Error('Đã huỷ.'), { name: 'AbortError' }) : e;
         console.warn('[ascii-gen] WebCodecs path unavailable, using MediaRecorder:', e.message);
       }
     }

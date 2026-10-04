@@ -3,20 +3,32 @@
    the first one at the player speed. Closing the dialog cancels a running export. */
 (function (ADG) {
   const { h, byId } = ADG.dom;
-  let api = null, fmt = 'gif', fps = 15, scale = 1, loop = true, job = null, els = null;
+  let api = null, fmt = 'gif', fps = 15, scale = 1, loop = true, job = null, els = null, path = '';
+  const GIF_MAX_BYTES = 40 * 1048576, GIF_MAX_FRAMES = 900; // beyond this a GIF is no longer shareable (and eats memory)
 
   const mb = (b) => (b / 1048576).toFixed(b < 1048576 ? 2 : 1) + ' MB';
 
   function info() {
     const s = api.getState(), steps = Math.max(1, (s.steps || []).length);
     const P = ADG.animFrames.plan(steps, s.speed, fps);
-    const g = api.build().grid;
-    const m = ADG.canvasOut.measure(g, Object.assign({}, s, { scale, template: api.template() }));
+    // the export sizes itself for the tallest step: estimate the same way
+    const cfg = ADG.store.toConfig(s), opts = Object.assign({}, s, { scale, template: api.template() });
+    let m = null;
+    for (let st = 0; st < steps; st++) {
+      const k = ADG.canvasOut.measure(ADG.frame.renderFrame(cfg, st, 0, { playing: true }).grid, opts);
+      if (!m || k.height > m.height || k.limit) m = k;
+      if (k.limit) break;
+    }
     const parts = [steps + ' bước × ' + (s.speed / 1000).toFixed(1) + ' s = ' + (P.durationMs / 1000).toFixed(1) + ' s', P.count + ' khung', m.width + '×' + m.height + ' px'];
-    if (fmt === 'gif') parts.push('≈ ' + mb(ADG.gifExport.estimate(m.width, m.height, P.count)) + ' (ước tính)');
-    const cap = ADG.video.capability();
-    if (fmt === 'video') parts.push(cap.ok ? (cap.path === 'webcodecs' ? 'MP4 (WebCodecs)' : (cap.ext.toUpperCase() + ' · ghi theo thời gian thực')) : 'trình duyệt không hỗ trợ');
-    return { text: parts.join(' · '), limit: m.limit, ok: fmt === 'gif' || cap.ok };
+    let limit = m.limit;
+    if (fmt === 'gif') {
+      const est = ADG.gifExport.estimate(m.width, m.height, P.count);
+      parts.push('≈ ' + mb(est) + ' (ước tính)');
+      if (!limit && (est > GIF_MAX_BYTES || P.count > GIF_MAX_FRAMES)) limit = 'GIF quá lớn (tối đa ' + GIF_MAX_FRAMES + ' khung / ' + mb(GIF_MAX_BYTES) + '). Giảm khung/giây, tỉ lệ, số bước hoặc tốc độ — hoặc xuất video.';
+    }
+    const cap = ADG.video.capability(), p = path || cap.path;
+    if (fmt === 'video') parts.push(cap.ok ? (p === 'webcodecs' ? 'MP4 (WebCodecs)' : (ADG.videoRecorder.pickType().indexOf('mp4') >= 0 ? 'MP4' : 'WebM') + ' · ghi theo thời gian thực, giữ tab này mở') : 'trình duyệt không hỗ trợ');
+    return { text: parts.join(' · '), limit, ok: fmt === 'gif' || cap.ok };
   }
 
   function seg(list, cur, set) {
@@ -47,7 +59,9 @@
     job = ctrl;
     els.bar.value = 0;
     draw();
-    const o = { state: s, fps, scale, loop, signal: ctrl.signal, onProgress: (d, n) => { els.bar.value = d / n; els.bar.textContent = Math.round((d / n) * 100) + '%'; } };
+    path = '';
+    const o = { state: s, fps, scale, loop, signal: ctrl.signal, onProgress: (d, n) => { els.bar.value = d / n; els.bar.textContent = Math.round((d / n) * 100) + '%'; },
+      onPath: (p) => { if (p !== path) { path = p; els.info.textContent = info().text; } } }; // a WebCodecs → recorder fallback is shown
     const t0 = performance.now(), base = 'ascii-dashboard-' + ADG.png.slug(api.template());
     try {
       let blob, ext;

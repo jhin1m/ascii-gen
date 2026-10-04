@@ -65,9 +65,9 @@
 
   // Panel updates run after the current event, and not while a pointer is down: a commit-on-blur
   // that rebuilds a section between mousedown and click would swallow the click.
-  let uiPending = null, pointerDown = false;
+  let uiPending = null;
   function flushUi() {
-    if (!uiPending || pointerDown) return;
+    if (!uiPending) return;
     const changed = uiPending;
     uiPending = null;
     update(store.get(), changed);
@@ -75,11 +75,8 @@
   function queueUi(changed) {
     const first = !uiPending;
     uiPending = Object.assign(uiPending || {}, changed);
-    if (first) setTimeout(flushUi, 0);
+    if (first) ADG.dom.whenIdle(flushUi);
   }
-  document.addEventListener('pointerdown', () => { pointerDown = true; }, true);
-  document.addEventListener('pointerup', () => { setTimeout(() => { pointerDown = false; flushUi(); }, 0); }, true);
-  document.addEventListener('pointercancel', () => { pointerDown = false; flushUi(); }, true);
 
   /** Draw the player's current frame (coalesced to one per animation frame). */
   function requestRender() {
@@ -117,7 +114,7 @@
 
   function onChange(s, changed) {
     const n = (s.steps || []).length;
-    if (n && s.step >= n) { store.set({ step: n - 1 }); return; } // a removed step / foreign config: clamp first
+    if (n && s.step >= n) store.set({ step: n - 1 }); // a removed step / foreign config: clamp (renders clamp meanwhile)
     if ((changed.steps || changed.step) && player.state().step !== s.step) player.sync(s.step);
     if (changed.speed) player.setSpeed(s.speed);
     if (changed.loop) player.setLoop(s.loop);

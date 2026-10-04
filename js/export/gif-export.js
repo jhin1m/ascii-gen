@@ -14,7 +14,8 @@
     const P = ADG.gifPalette.build(ADG.store.palette(o.state));
     let enc = null, idx = null, delayCs = 0, carry = 0;
     await ADG.animFrames.run({
-      state: o.state, fps: o.fps, scale: o.scale, signal: o.signal, onProgress: o.onProgress,
+      // GIF delays are ≥ 2 cs: 50 fps at most
+      state: o.state, fps: Math.min(50, o.fps), scale: o.scale, signal: o.signal, onProgress: o.onProgress,
       onStart(canvas, plan) {
         enc = ADG.gif.createEncoder(canvas.width, canvas.height, P.rgb, { loop: o.loop ? 0 : -1 });
         idx = new Uint8Array(canvas.width * canvas.height);

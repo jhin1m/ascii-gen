@@ -53,6 +53,22 @@
     if (sel) try { again.setSelectionRange(sel[0], sel[1]); } catch (e) { /* inputs like number/color have no selection */ }
   }
 
+  // Pointer state shared by every deferred redraw: a section rebuilt between mousedown and click
+  // would swallow the click. Reset on everything that can eat the pointerup (context menu, blur).
+  let down = false;
+  const idleQueue = [];
+  const release = () => { down = false; setTimeout(() => idleQueue.splice(0).forEach((fn) => fn()), 0); };
+  if (typeof document !== 'undefined') {
+    document.addEventListener('pointerdown', () => { down = true; }, true);
+    ['pointerup', 'pointercancel', 'contextmenu'].forEach((t) => document.addEventListener(t, release, true));
+    window.addEventListener('blur', release);
+    document.addEventListener('visibilitychange', release);
+  }
+  /** Run fn after the current event, and only once no pointer is held down. */
+  function whenIdle(fn) {
+    if (down) idleQueue.push(fn); else setTimeout(() => (down ? idleQueue.push(fn) : fn()), 0);
+  }
+
   /**
    * Redraw guard for a form section: while a text field inside it has focus the redraw waits
    * (the user may be typing), and runs once the focus leaves the section.
@@ -60,9 +76,9 @@
    */
   function section(root, draw) {
     let stale = false;
-    root.addEventListener('focusout', () => setTimeout(() => {
+    root.addEventListener('focusout', () => whenIdle(() => {
       if (stale && !typing(root)) { stale = false; draw(); }
-    }, 0));
+    }));
     return () => {
       if (typing(root)) { stale = true; return; }
       stale = false;
@@ -72,12 +88,14 @@
 
   function debounce(fn, ms) {
     let t = 0;
-    const d = (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
+    const d = (...a) => { clearTimeout(t); t = setTimeout(() => { t = 0; fn(...a); }, ms); };
     d.cancel = () => clearTimeout(t);
+    /** Run a pending call now (e.g. before its target goes away). */
+    d.flush = (...a) => { if (!t) return; clearTimeout(t); t = 0; fn(...a); };
     return d;
   }
 
   const byId = (id) => document.getElementById(id);
 
-  ADG.dom = { h, replace, section, typing, debounce, byId };
+  ADG.dom = { h, replace, section, typing, whenIdle, debounce, byId };
 })(window.ADG = window.ADG || {});

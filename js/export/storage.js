@@ -16,7 +16,15 @@
       const s = store(), raw = s && s.getItem(KEY);
       if (!raw) return null;
       // keep every valid key: one bad value must not throw away the whole saved work
-      try { return ADG.configFile.validate(JSON.parse(raw), { lenient: true }); } catch (e) {
+      try {
+        const obj = JSON.parse(raw), patch = ADG.configFile.validate(obj, { lenient: true });
+        const dropped = Object.keys(ADG.configFile.FIELDS).filter((k) => k in obj && !(k in patch));
+        if (dropped.length) { // the next save would overwrite them: keep the original aside
+          console.warn('[ascii-gen] autosave: dropped invalid keys', dropped);
+          try { s.setItem(KEY + ':bad', raw); } catch (e2) { /* full: the copy is best effort */ }
+        }
+        return patch;
+      } catch (e) {
         try { s.setItem(KEY + ':bad', raw); } catch (e2) { /* full: the copy is best effort */ }
         throw e;
       }

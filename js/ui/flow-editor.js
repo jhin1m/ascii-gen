@@ -122,7 +122,7 @@
     function draw() {
       const k = api.flowKey();
       if (!k) { key = null; els = null; ADG.dom.replace(root, h('p', { class: 'mut' }, 'Chưa có khối Sơ đồ luồng. Thêm hàng loại "Sơ đồ luồng" ở Bố cục.')); return; }
-      if (k !== key || !els) { key = k; shown = null; skeleton(); }
+      if (k !== key || !els) { commit.flush(); key = k; shown = null; skeleton(); } // keystrokes still pending belong to the old block
       const b = block(), dsl = dslOf(b), r = check(dsl);
       // only a change from elsewhere (preset, JSON, template) replaces what the user is typing
       if (dsl !== shown) { if (els.dsl.value !== dsl) { els.dsl.value = dsl; els.err.hidden = true; } shown = dsl; }
