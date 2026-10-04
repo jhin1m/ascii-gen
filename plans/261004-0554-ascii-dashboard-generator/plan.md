@@ -50,7 +50,7 @@ Nguồn quyết định: [brainstorm report](../reports/brainstorm-261004-1235-a
 | 5 | [Phase 5: Editor UI and persistence](./phase-05-editor-ui-and-persistence.md) | Completed |
 | 6 | [Phase 6: Canvas output and exports](./phase-06-canvas-output-and-exports.md) | Completed |
 | 7 | [Phase 7: GIF and video export](./phase-07-gif-and-video-export.md) | Completed |
-| 8 | [Phase 8: Visual QA and polish](./phase-08-visual-qa-and-polish.md) | Pending |
+| 8 | [Phase 8: Visual QA and polish](./phase-08-visual-qa-and-polish.md) | In progress (chờ deploy + duyệt phong cách) |
 
 Dependencies: 1 → 2 → 3 → 4 → 5; 6 cần 2 (chạy song song được với 3–5); 7 cần 4 + 6; 8 cần tất cả.
 
@@ -61,15 +61,15 @@ config ─► generators (điền phần auto, seed) ─► layout (block.render
 ```
 
 ## Success Criteria
-- [ ] `node tests/run.js` xanh (grid, markup, layout, DSL, generators, gif LZW)
-- [ ] Self-check 0 cảnh báo: 4 template × 7 theme × 2 kiểu viền × 80/96/120 cột
-- [ ] Agent pipeline + Midnight so với ref.png: cùng phong cách (QA phase 8 có ảnh chụp)
-- [ ] Đổi tên actor 1 chỗ → mọi khối auto cập nhật; khối sửa tay giữ nguyên
-- [ ] PNG 2x đúng kích thước, có/không chrome; plain text dán vào code block thẳng cột
-- [ ] Share link + .json tái tạo đúng hình (seed, step, theme, window)
-- [ ] GIF/MP4 chạy đủ các bước, lặp; Firefox ra WebM
-- [ ] Mobile 390px: preview trên, panel dưới, không cuộn ngang
-- [ ] Mở bằng `file://` chạy đủ (share link cảnh báo khi chưa có `SHARE_BASE`)
+- [x] `node tests/run.js` xanh (grid, markup, layout, DSL, generators, gif LZW)
+- [x] Self-check 0 cảnh báo: 4 template × 7 theme × 2 kiểu viền × 80/96/120 cột
+- [ ] Agent pipeline + Midnight so với ref.png: cùng phong cách (QA phase 8 có ảnh chụp — chờ người dùng duyệt: reports/visual-qa-report.md)
+- [x] Đổi tên actor 1 chỗ → mọi khối auto cập nhật; khối sửa tay giữ nguyên
+- [x] PNG 2x đúng kích thước, có/không chrome; plain text dán vào code block thẳng cột
+- [x] Share link + .json tái tạo đúng hình (seed, step, theme, window)
+- [x] GIF/MP4 chạy đủ các bước, lặp; Firefox ra WebM (Firefox chưa kiểm tra tay — đường WebM có code + chọn qua isTypeSupported)
+- [x] Mobile 390px: preview trên, panel dưới, không cuộn ngang
+- [x] Mở bằng `file://` chạy đủ (share link cảnh báo khi chưa có `SHARE_BASE`)
 - [ ] Deploy GitHub Pages; share link mở đúng hình trên máy khác
 
 ## Open Questions

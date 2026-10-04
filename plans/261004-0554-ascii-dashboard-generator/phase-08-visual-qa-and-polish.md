@@ -1,7 +1,7 @@
 ---
 phase: 8
 title: "Phase 8: Visual QA and polish"
-status: todo
+status: in-progress
 priority: P1
 effort: "4h"
 dependencies: [5, 6, 7]
@@ -51,3 +51,8 @@ Unverified in Phase 6, verify in real browsers:
 
 ## Risk Assessment
 - "Khớp phong cách" chủ quan → so theo checklist hạng mục ở trên, người dùng chốt cuối
+
+## Progress (2026-10-04)
+<!-- Updated: phase 8 execution -->
+- Done: `js/core/qa-matrix.js` (`ADG.qa.matrix()` → 0 issues, pinned by tests/qa-matrix.test.js); ref.png comparison → dashed boxes for lead/workers/review + side column; PNG 2x, GIF, MP4 (WebCodecs + recorder) verified in Chrome; 390px no horizontal scroll; `file://` render via headless Chrome. Report: `reports/visual-qa-report.md` (+ screenshot).
+- Remaining: user sign-off on style vs ref.png; GitHub Pages deploy (repo name + visibility to confirm) + `SHARE_BASE`; Safari/Firefox manual checks.
