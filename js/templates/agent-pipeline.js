@@ -3,7 +3,8 @@
    {@id} tokens, so renaming an actor updates every block. Worker footers follow the activity.
    get() returns a fresh deep copy so callers can mutate it freely. */
 (function (ADG) {
-  const worker = (id, desc) => ({ lines: ['{@' + id + '}', '{lead:{@lead}} · {a2:medium}', '{dim:' + desc + '}'], footer: {} });
+  // dashed boxes like the reference; the router table keeps its double border
+  const worker = (id, desc) => ({ lines: ['{@' + id + '}', '{lead:{@lead}} · {a2:medium}', '{dim:' + desc + '}'], footer: {}, box: 'dash' });
 
   const CONFIG = {
     grid: { cols: 96 },
@@ -38,6 +39,7 @@
       side: {
         type: 'side-column',
         title: '{a2b:{@advisor^} · on call}',
+        box: 'dash',
         sub: 'watches · reads it all',
         items: [
           { kind: 'milestone', title: 'before a plan', q: 'right approach?', a: 'run migration first', link: 'lead' },
@@ -57,7 +59,7 @@
         dsl: ADG.flowPresets.presetDsl('fan'),
         caption: 'delegate · 3 workers · {a2b:effort medium}',
         nodes: {
-          lead: { lines: ['{a1b:{@lead^} · main session}', 'effort {bar:1:6:a1} {a2b:high} · ctx 1M', '{dim:plans + decides}'] },
+          lead: { box: 'dash', lines: ['{a1b:{@lead^} · main session}', 'effort {bar:1:6:a1} {a2b:high} · ctx 1M', '{dim:plans + decides}'] },
           router: {
             title: '{a3b:{@router^}} · {a3b:fork layer} · one call · < 0.5 s',
             right: '{a3b:1,683 forks}',
@@ -73,7 +75,7 @@
           worker: worker('worker', 'edits + checks'),
           explorer: worker('explorer', 'reads the code'),
           researcher: worker('researcher', 'pulls the docs'),
-          'lead#2': { id: 'review', lines: ['{a1b:back to main session · high}', '**review + verify**', '{advisor:{@advisor}} reviews · {lead:{@lead}} ships', '{dim:4 diffs · no edits until go}'] }
+          'lead#2': { id: 'review', box: 'dash', lines: ['{a1b:back to main session · high}', '**review + verify**', '{advisor:{@advisor}} reviews · {lead:{@lead}} ships', '{dim:4 diffs · no edits until go}'] }
         }
       },
       timeline: {

@@ -46,6 +46,7 @@
       { key: 'title', label: 'Tiêu đề (markup)', type: 'text' },
       { key: 'sub', label: 'Dòng phụ', type: 'text' },
       { key: 'color', label: 'Màu khung', type: 'color-slot' },
+      { key: 'box', label: 'Kiểu khung', type: 'select', options: ['solid', 'dash', 'dbl'] },
       { key: 'items', label: 'Mục: loại | ...', type: 'list', variants: KINDS }
     ],
     render(cfg, w, ctx) {
@@ -55,7 +56,7 @@
       const h = Math.max(end + 1, ctx.minHeight || 0, 4);
       const g = ctx.grid(w, h);
       const tw = Math.max(1, w - 6); // text from x=4, one blank cell before the right border
-      g.box(0, 0, w, h, color);
+      g.box(0, 0, w, h, color, ['solid', 'dash', 'dbl'].indexOf(cfg.box) >= 0 ? cfg.box : 'solid');
       g.vline(2, 3, h - 4, 'dot', false, ':');
       g.center(2, w - 4, 1, U.str(cfg.title), color, true);
       g.center(2, w - 4, 2, U.str(cfg.sub), 'dim');
