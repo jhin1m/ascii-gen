@@ -24,6 +24,13 @@ Actors + steps thành nguồn chung tự sinh nội dung khối; Randomize theo 
   - API thuần `renderFrame(config, step, t) → grid` (dùng lại cho GIF/MP4)
 - Non-functional: render 96×70 < 8 ms (đo `performance.now`)
 
+## Carry-over from phases 3/6
+<!-- Updated: phase 3/6 execution -->
+- Actor-derived defaults deferred here: node title (`actor.name`), footer (`$ idle` + bar + badge), sub line `{lead:..} · medium`. `nodes` keyed by actor id; DSL uses actor ids (no rewrite of DSL on rename).
+- `layout.compose` returns `skipped:[{from,to,reason}]` (missing/unreachable/out-of-rows); thread `ctx.step/t` through without breaking it.
+- Hub preset in agent-pipeline shows no side-column arrows; generators/side-column should handle.
+- Phase 7 needs `renderFrame` + canvas renderer (Phase 6, done).
+
 ## Related Code Files
 - Create: `js/core/generators.js`, `js/core/random.js` (mulberry32, pick, range), `js/ui/player.js`
 - Modify: các block (đọc `ctx.step`, `ctx.t`), `js/core/layout.js` (truyền `t`), `js/app.js`

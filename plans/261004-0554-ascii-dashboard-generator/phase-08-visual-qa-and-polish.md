@@ -21,6 +21,15 @@ Kiểm tra trực quan trong trình duyệt thật: so template Agent pipeline +
   - Safari: hiển thị + PNG + MP4
 - Non-functional: ghi lại ảnh chụp trước/sau vào `plans/261004-0554-ascii-dashboard-generator/reports/`
 
+## Carry-over from phases 3/6
+<!-- Updated: phase 3/6 execution -->
+Unverified in Phase 6, verify in real browsers:
+- Real downloads (PNG/.json) + clipboard in interactive browser; share link open in new/incognito tab.
+- `file://` run; Safari and Firefox (WebM path).
+- PNG vs HTML pixel parity with real web fonts (VT323 / IBM Plex / Fira Code metrics); adjust metrics if drift.
+- Canvas area guard also limits Chrome/Firefox >16.7MP (accepted trade-off) - confirm 3x at 120 cols still OK.
+- Phase 3: fan layout vs ref.png visual; hub preset side-column arrows absent in agent-pipeline.
+
 ## Related Code Files
 - Create: `js/core/qa-matrix.js` (chỉ gọi tay từ console), `plans/261004-0554-ascii-dashboard-generator/reports/visual-qa-report.md`
 - Modify: theo phát hiện (theme Midnight, block spacing, chrome)

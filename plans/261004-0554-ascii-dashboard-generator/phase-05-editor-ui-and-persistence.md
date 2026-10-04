@@ -26,9 +26,21 @@ Giao diện app theo mockup đã duyệt: header toolbar, panel trái thu gọn 
   - Hiệu ứng CSS: scanline overlay, glow `text-shadow` currentColor, blink
 - Non-functional: a11y (label, aria-pressed, focus ring), không framework
 
+## Carry-over from phases 3/6
+<!-- Updated: phase 3/6 execution -->
+- Boot order: load autosave synchronously BEFORE `loadFromHash()` so share link wins.
+- M6: DSL invalid -> keep old picture (graph/grid); show inline error. Deferred from Phase 3.
+- N2: parser error column vs NFD input - verify cursor placement on error.
+- N4: duplicate anchor/node ids not warned - editor should warn.
+- Show `layout.compose().skipped` reasons (missing/unreachable/out-of-rows) in flow editor.
+- Reuse `js/output/window-chrome.js` (em geometry macos/windows/ubuntu/crt/none) for HTML chrome; do not recreate.
+- DSL uses actor ids; `presetDsl(id)` no names arg; rename actor needs no DSL rewrite.
+- Export dialog/UI wiring already exists in `js/ui/export-dialog.js`, `js/export/*` (Phase 6); integrate, don't duplicate.
+
 ## Related Code Files
-- Create: `js/ui/panel.js`, `js/ui/schema-form.js`, `js/ui/data-source-form.js`, `js/ui/layout-list.js`, `js/ui/flow-editor.js`, `js/ui/style-tab.js`, `js/ui/json-tab.js`, `js/ui/preview.js` (scale-to-fit), `js/output/window-chrome.js` (mô tả chrome dùng chung HTML+canvas), `js/core/store.js` (state + subscribe), `js/export/storage.js`, `js/templates/server-monitor.js`, `js/templates/ci-cd-build.js`, `js/templates/blank.js`, `js/templates/index.js`
+- Create: `js/ui/panel.js`, `js/ui/schema-form.js`, `js/ui/data-source-form.js`, `js/ui/layout-list.js`, `js/ui/flow-editor.js`, `js/ui/style-tab.js`, `js/ui/json-tab.js`, `js/ui/preview.js` (scale-to-fit), `js/core/store.js` (state + subscribe), `js/export/storage.js`, `js/templates/server-monitor.js`, `js/templates/ci-cd-build.js`, `js/templates/blank.js`, `js/templates/index.js`
 - Modify: `index.html`, `style.css`, `js/app.js`
+- Modify/reuse: `js/output/window-chrome.js` (created in Phase 6) <!-- Updated: phase 3/6 execution -->
 - Reference: `plans/reports/brainstorm-mockup-261004/Main.dc.html`, `Mobile.dc.html`
 
 ## Implementation Steps
@@ -36,7 +48,7 @@ Giao diện app theo mockup đã duyệt: header toolbar, panel trái thu gọn 
 2. Markup tĩnh khung app trong `index.html`; `style.css` theo token mockup (#0d0f14, #12141b, #171a23, accent #ecd67a, IBM Plex Sans + JetBrains Mono)
 3. `schema-form.js`: field → input; list → textarea pipe-delimited (`00:09 | lead | msg`); sửa → `auto=false`
 4. Data source, layout list, flow editor, style tab, JSON tab
-5. `window-chrome.js`: spec hình học theo `fontSize` (em) để canvas phase 6 vẽ lại cùng số đo
+5. HTML chrome dùng lại `window-chrome.js` (đã có từ Phase 6, hình học em) <!-- Updated: phase 3/6 execution -->
 6. Templates + storage + mobile scale
 7. Kiểm tra tay trên Chrome desktop + DevTools 390px
 
