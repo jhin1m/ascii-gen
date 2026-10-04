@@ -6,7 +6,7 @@ module.exports = ({ ADG, test, assert }) => {
   }), extra || {});
   const render = (type, cfg, w, extra) => B.get(type).render(cfg, w, ctxFor(extra));
   const lines = (r) => r.grid.toLines();
-  const tpl = ADG.templates['agent-pipeline'].get().blocks;
+  const tpl = ADG.generators.resolveTokens(ADG.templates['agent-pipeline'].get()).blocks;
 
   test('registry: register/get, unknown field type rejected, prototype keys are not blocks', () => {
     assert.ok(B.get('timeline'));

@@ -7,6 +7,9 @@
    Node data lives in cfg.nodes[key] (key = the name, `name#2` for a repeated name):
    { id?, lines:[markup], color, box, footer:{status,ratio,badge} }; for `@table` nodes it is a
    table block config. `id` renames the exported anchor. Missing data → a box titled with the name.
+   Actor nodes without data get a default box: title, the steps they work in, and (in a parallel
+   tier or as a hub spoke) a footer. Footer fields left out (status / ratio / badge) follow the
+   actor's activity at the current step: idle → running (bar fills with ctx.t) → done.
    cfg.caption labels the first fan-out (an edge label `: text` on the DSL wins). Every node
    exports an anchor { id, x, y, w, h }; one with another node to its left also has reach:false,
    so the layout reports side-column links to it as skipped. Narrow widths: columns share the
@@ -25,6 +28,19 @@
   /** Width that fits the node's widest line plus padding, at least `w`, at most `max`. */
   const fitWidth = (n, w, max, ctx) => Math.min(max, Math.max(w, U.lines(n.lines).reduce((m, l) => Math.max(m, ADG.markup.mlen(l, ctx.slots)), 0) + 4));
 
+  const SPIN = '|/-\\';
+  /** Footer with the fields left out filled from the actor's activity at the current step. */
+  function footerState(f, actor, ctx) {
+    const A = ctx.activity, steps = (A && actor && A.byActor && A.byActor[actor]) || [];
+    let auto = { status: 'idle', ratio: 0, badge: '{m:[..]}' };
+    const k = steps.indexOf(ctx.step);
+    if (k >= 0) {
+      const t = ctx.playing ? ctx.t : 0.5;
+      auto = { status: 'running', ratio: (k + t) / steps.length, badge: '{a2:[' + SPIN[(ctx.step + Math.floor(t * 4)) % 4] + ']}' };
+    } else if (steps.length && ctx.step > steps[steps.length - 1]) auto = { status: 'done', ratio: 1, badge: '{a4:[ok]}' };
+    return { status: f.status != null ? f.status : auto.status, ratio: f.ratio != null ? f.ratio : auto.ratio, badge: f.badge != null ? f.badge : auto.badge };
+  }
+
   /** Boxed node; the footer sits on the bottom rows so equal-height siblings line up. Returns its anchor. */
   function drawNode(g, x, y, w, h, n, ctx) {
     const color = colorOf(n, ctx);
@@ -32,7 +48,7 @@
     // one blank cell inside each border, like the reference
     U.lines(n.lines).forEach((l, i) => g.center(x + 2, w - 4, y + 1 + i, l, 'fg', i === 0));
     if (isObj(n.footer)) {
-      const f = n.footer, fy = y + h - 5;
+      const f = footerState(n.footer, n.actor, ctx), fy = y + h - 5;
       g.hline(x + 2, fy, w - 4, 'dot', true);
       g.mtext(x + 2, fy + 1, '$ ' + (U.str(f.status) || 'idle'), 'mut', false, null, w - 4);
       g.bar(x + 2, fy + 2, w - 4, U.ratio(f.ratio), color);
@@ -59,7 +75,7 @@
    * Sized, drawable node: { id, w, h, bk (box kind), color, table, draw(g, x, y, rowH) }.
    * `w` is the wanted width and `max` the widest allowed; tables always take `max`.
    */
-  function build(node, cfg, ctx, w, max, defBox) {
+  function build(node, cfg, ctx, w, max, defBox, foot) {
     const d = U.obj(own(cfg.nodes, node.key)), who = identity(node, ctx), slot = who.slot;
     const id = U.str(d.id) || node.key;
     if (node.kind === 'table') {
@@ -67,9 +83,15 @@
       const t = ADG.blocks.get('table').render(tc, max, ctx);
       return { id, w: max, h: t.grid.H, table: true, bk: kindOf(tc.box, 'dbl'), color: U.slot(tc.color, 'a3'), draw: (g, x, y) => g.blit(t.grid, x, y) };
     }
-    const n = { id, lines: d.lines != null ? d.lines : [who.title], color: U.slot(d.color, slot || 'fg'), box: kindOf(d.box, defBox || 'solid'), footer: d.footer };
+    const n = { id, actor: slot ? node.name : null, lines: d.lines != null ? d.lines : defaultLines(node, who, ctx), color: U.slot(d.color, slot || 'fg'), box: kindOf(d.box, defBox || 'solid'), footer: d.footer != null ? d.footer : foot && slot ? {} : null };
     const bw = fitWidth(n, w, max, ctx);
     return { id, w: bw, h: nodeHeight(n), bk: n.box, color: colorOf(n, ctx), draw: (g, x, y, h) => drawNode(g, x, y, bw, Math.max(h, nodeHeight(n)), n, ctx) };
+  }
+
+  /** Title, then the steps an actor works in (from ctx.activity). */
+  function defaultLines(node, who, ctx) {
+    const A = ctx.activity, steps = who.slot && A && A.byActor && A.byActor[node.name];
+    return steps && steps.length ? [who.title, '{dim:' + steps.map((s) => ctx.steps[s]).join(' · ') + '}'] : [who.title];
   }
 
   const junction = (J, kind, dir) => (kind === 'dbl' ? J['d' + dir] : J[dir]);
@@ -89,7 +111,7 @@
         const ck = keys.slice(r * WRAP, (r + 1) * WRAP), k = ck.length;
         const bs = ck.map((key) => (keys.length === 1
           ? build(nodes[key], cfg, ctx, Math.max(20, Math.round(cw * (i === 0 ? 0.8 : 0.63))), cw)
-          : build(nodes[key], cfg, ctx, colW, colW)));
+          : build(nodes[key], cfg, ctx, colW, colW, null, true)));
         const x0 = k === 1 ? mid - Math.floor(bs[0].w / 2) : cx + Math.floor((cw - (k * colW + k - 1)) / 2);
         const xs = bs.map((b, j) => (keys.length === 1 ? x0 : x0 + j * (colW + 1)));
         const centers = bs.map((b, j) => xs[j] + Math.floor(b.w / 2));
@@ -165,9 +187,9 @@
     const centerX = mid - Math.floor(cb.w / 2);
     const sw = Math.min(24, centerX - cx - gap, cx + cw - (centerX + cb.w) - gap);
     if (sw < 8) return { error: 'flow too narrow for a hub (' + w + ' columns)' };
-    const sp = P.spokes.map((k) => build(nodes[k], cfg, ctx, sw, sw));
+    const sp = P.spokes.map((k) => build(nodes[k], cfg, ctx, sw, sw, null, true));
     const vw = Math.min(cw, sw + 6);
-    const vert = (j) => build(nodes[P.spokes[j]], cfg, ctx, vw, vw);
+    const vert = (j) => build(nodes[P.spokes[j]], cfg, ctx, vw, vw, null, true);
     const [top, left, right, bottom] = [0, 1, 2, 3].map((j) => (j < sp.length ? (j === 0 || j === 3 ? vert(j) : sp[j]) : null));
     const anchors = [], draws = [], late = [];
     let y = 0;

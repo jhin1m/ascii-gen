@@ -1,7 +1,9 @@
 /* Template: Agent pipeline (the ref.png composition). Content is English and uses generic role
-   names only. get() returns a fresh deep copy so callers can mutate it freely. */
+   names only. Blocks are hand-tuned to match the reference (not auto) but name actors through
+   {@id} tokens, so renaming an actor updates every block. Worker footers follow the activity.
+   get() returns a fresh deep copy so callers can mutate it freely. */
 (function (ADG) {
-  const worker = (name, desc) => ({ lines: [name, '{lead:lead} · {a2:medium}', '{dim:' + desc + '}'], footer: { status: 'idle', ratio: 0, badge: '{m:[..]}' } });
+  const worker = (id, desc) => ({ lines: ['{@' + id + '}', '{lead:{@lead}} · {a2:medium}', '{dim:' + desc + '}'], footer: {} });
 
   const CONFIG = {
     grid: { cols: 96 },
@@ -16,6 +18,7 @@
     ],
     steps: ['plan', 'fork', 'delegate', 'work', 'merge', 'review', 'ship'],
     current: 1,
+    seed: 0,
     layout: [
       ['header'],
       ['steps'],
@@ -26,15 +29,15 @@
     ],
     blocks: {
       header: {
-        title: 'AGENT PIPELINE · {a1b:LEAD} WORKS · {a2b:ADVISOR} ON CALL',
+        title: 'AGENT PIPELINE · {a1b:{@lead^}} WORKS · {a2b:{@advisor^}} ON CALL',
         emblem: '=/##/=',
-        legend: ['lead high', 'workers medium', 'router forks', 'advisor on call'],
-        command: '{a2b:> /advisor on}      Advisor set to {a2b:on call}'
+        legend: ['{@lead} high', 'workers medium', '{@router} forks', '{@advisor} on call'],
+        command: '{a2b:> /{@advisor} on}      {@advisor} set to {a2b:on call}'
       },
       steps: {},
       side: {
         type: 'side-column',
-        title: '{a2b:ADVISOR · on call}',
+        title: '{a2b:{@advisor^} · on call}',
         sub: 'watches · reads it all',
         items: [
           { kind: 'milestone', title: 'before a plan', q: 'right approach?', a: 'run migration first', link: 'lead' },
@@ -54,23 +57,23 @@
         dsl: ADG.flowPresets.presetDsl('fan'),
         caption: 'delegate · 3 workers · {a2b:effort medium}',
         nodes: {
-          lead: { lines: ['{a1b:LEAD · main session}', 'effort {bar:1:6:a1} {a2b:high} · ctx 1M', '{dim:plans + decides}'] },
+          lead: { lines: ['{a1b:{@lead^} · main session}', 'effort {bar:1:6:a1} {a2b:high} · ctx 1M', '{dim:plans + decides}'] },
           router: {
-            title: '{a3b:ROUTER} · {a3b:fork layer} · one call · < 0.5 s',
+            title: '{a3b:{@router^}} · {a3b:fork layer} · one call · < 0.5 s',
             right: '{a3b:1,683 forks}',
             cols: ['fork', 'p(top)', 'route'],
             rows: [
               { name: 'which file', ratio: 0.84, route: 'sharp -> code' },
-              { name: 'which tool', ratio: 0.46, route: '{a1b:split -> lead}' },
-              { name: 'retry/stop', ratio: 0.54, route: '{a1b:split -> lead}' }
+              { name: 'which tool', ratio: 0.46, route: '{a1b:split -> {@lead}}' },
+              { name: 'retry/stop', ratio: 0.54, route: '{a1b:split -> {@lead}}' }
             ],
             highlight: 0,
-            note: '{a3b:sharp}: runs in code, lead never sees it'
+            note: '{a3b:sharp}: runs in code, {@lead} never sees it'
           },
           worker: worker('worker', 'edits + checks'),
           explorer: worker('explorer', 'reads the code'),
           researcher: worker('researcher', 'pulls the docs'),
-          'lead#2': { id: 'review', lines: ['{a1b:back to main session · high}', '**review + verify**', '{advisor:advisor} reviews · {lead:lead} ships', '{dim:4 diffs · no edits until go}'] }
+          'lead#2': { id: 'review', lines: ['{a1b:back to main session · high}', '**review + verify**', '{advisor:{@advisor}} reviews · {lead:{@lead}} ships', '{dim:4 diffs · no edits until go}'] }
         }
       },
       timeline: {
@@ -114,11 +117,11 @@
       status: {
         prompt: true,
         items: [
-          { k: 'step', v: '{a2b:fork}' },
+          { k: 'step', v: '{a2b:{@step}}' },
           { k: 'effort', v: '{a1b:high}' },
           { k: 'workers', v: '{a2b:0/3}' },
-          { k: 'advisor', v: '{a2b:on call}' },
-          { k: 'router', v: '{a3b:1,683}' }
+          { k: '{@advisor}', v: '{a2b:on call}' },
+          { k: '{@router}', v: '{a3b:1,683}' }
         ]
       }
     }

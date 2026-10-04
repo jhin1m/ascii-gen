@@ -1,7 +1,7 @@
 ---
 phase: 4
 title: "Phase 4: Generators, randomize, player"
-status: todo
+status: completed
 priority: P1
 effort: "5h"
 dependencies: [3]

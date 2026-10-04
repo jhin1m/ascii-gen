@@ -25,8 +25,12 @@
     return Math.max(MIN_COLS, Math.min(MAX_COLS, n));
   }
 
-  /** Shared render context: actors (id → slot/name), steps, current step, grid factory. */
-  function makeCtx(config) {
+  /**
+   * Shared render context: actors (id → slot/name), steps, current step, grid factory, and the
+   * frame: t (0..1 inside the step), playing, activity (see generators.activity; may be null).
+   */
+  function makeCtx(config, frame) {
+    frame = frame || {};
     const slots = {}, names = {};
     const U = ADG.blocks.util;
     U.arr(config.actors, 20).forEach((a) => {
@@ -45,6 +49,9 @@
       N: (id) => (Object.prototype.hasOwnProperty.call(names, id) ? names[id] : String(id == null ? '' : id)),
       slot: (id) => (Object.prototype.hasOwnProperty.call(slots, id) ? slots[id] : null),
       grid: (w, h) => ADG.grid.createGrid(w, h, { border, actors: slots }),
+      t: Math.max(0, Math.min(1, Number(frame.t) || 0)),
+      playing: !!frame.playing,
+      activity: frame.activity || null,
       minHeight: 0,
       anchors: []
     };
@@ -112,12 +119,13 @@
 
   /**
    * @param {object} config dashboard config ({ grid:{cols}, border, actors, steps, current, layout, blocks })
+   * @param {{t?: number, playing?: boolean, activity?: object}} [frame] animation state (see core/frame.js)
    * @returns {{ grid: object, anchors: Array<{id,x,y,w,h}>, cols: number, rows: number, skipped: Array<{from,to,reason}> }}
    */
-  function compose(config) {
+  function compose(config, frame) {
     config = config || {};
     const cols = clampCols(config.grid && config.grid.cols);
-    const ctx = makeCtx(config);
+    const ctx = makeCtx(config, frame);
     const inner = cols - 2 * MARGIN;
     const placed = [], anchors = [], links = [];
     let y = PAD_TOP;

@@ -27,6 +27,11 @@
     </select>
   </label>
   <label class="field">Bước <select id="step-select"></select></label>
+  <button id="prev" class="btn" type="button" aria-label="Bước trước">‹</button>
+  <button id="play" class="btn" type="button" aria-pressed="false">Phát</button>
+  <button id="next" class="btn" type="button" aria-label="Bước sau">›</button>
+  <label class="field">Tốc độ <input id="speed" type="range" min="300" max="3000" step="100" value="1200"> <span id="speed-label">1.2 s</span></label>
+  <button id="randomize" class="btn" type="button">Randomize</button>
   <span id="check-status" class="check-status"></span>
   <button id="export-open" class="btn btn-primary" type="button">Xuất</button>
 </header>
@@ -99,6 +104,9 @@
 <script src="js/core/layout.js"></script>
 <script src="js/core/flow-dsl.js"></script>
 <script src="js/core/flow-graph.js"></script>
+<script src="js/core/random.js"></script>
+<script src="js/core/generators.js"></script>
+<script src="js/core/frame.js"></script>
 <script src="js/blocks/registry.js"></script>
 <script src="js/blocks/status.js"></script>
 <script src="js/blocks/header.js"></script>
@@ -120,6 +128,7 @@
 <script src="js/export/config-file.js"></script>
 <script src="js/export/share-link.js"></script>
 <script src="js/ui/export-dialog.js"></script>
+<script src="js/ui/player.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

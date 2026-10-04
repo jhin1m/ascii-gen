@@ -1,5 +1,6 @@
 module.exports = ({ ADG, test, assert, warnings }) => {
-  const { compose } = ADG.layout;
+  // templates name actors through {@id} tokens: resolve them (as renderFrame does) before composing
+  const compose = (cfg, frame) => ADG.layout.compose(ADG.generators.resolveTokens(cfg), frame);
   const pipeline = () => ADG.templates['agent-pipeline'].get();
   const ctxFor = (cfg) => ADG.layout.makeCtx(cfg || { actors: [], steps: [] });
   const renderFlow = (cfg, w) => ADG.blocks.get('flow').render(cfg, w, ctxFor());
@@ -119,7 +120,8 @@ module.exports = ({ ADG, test, assert, warnings }) => {
     assert.eq((b.text.match(/>\|/g) || []).length, 3, 'side arrows to lead, worker, review still drawn');
     assert.deq(b.r.anchors.map((x) => x.id), a.r.anchors.map((x) => x.id), 'anchor ids stable');
     ['lead', 'review', 'worker'].forEach((id) => assert.ok(b.r.anchors.some((x) => x.id === id), id));
-    assert.ok(b.text.indexOf('LEAD · main session') > 0, 'custom node data kept');
+    assert.ok(a.text.indexOf('LEAD · main session') > 0, 'custom node data kept');
+    assert.ok(b.text.indexOf('TRƯỞNG NHÓM · main session') > 0 && b.text.indexOf('LEAD ·') < 0, '{@lead^} token follows the rename');
     // a default-data node (no cfg.nodes entry) shows the renamed actor
     const r = ADG.blocks.get('flow').render({ dsl: 'lead -> router' }, 60, ADG.layout.makeCtx({ actors: [{ id: 'lead', name: 'Trưởng nhóm', color: 'a1' }, { id: 'router', name: 'Điều phối', color: 'a3' }], steps: [] }));
     const t = r.grid.toLines().join('\n');

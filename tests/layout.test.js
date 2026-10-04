@@ -1,5 +1,6 @@
 module.exports = ({ ADG, test, assert, warnings }) => {
-  const { compose, split, clampCols } = ADG.layout;
+  const { split, clampCols } = ADG.layout;
+  const compose = (cfg, frame) => ADG.layout.compose(ADG.generators.resolveTokens(cfg || {}), frame);
   const { selfCheck } = ADG.grid;
   const pipeline = () => ADG.templates['agent-pipeline'].get();
   const linesOk = (g) => g.toLines().every((l) => Array.from(l).length === g.W);

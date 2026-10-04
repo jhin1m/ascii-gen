@@ -1,4 +1,5 @@
-/* Meters block ("who sees what"): per item an actor name + `@####....` meter, a note underneath. */
+/* Meters block ("who sees what"): per item an actor name + `@####....` meter, a note underneath.
+   While playing, meters fill up over the run (full at the last step). */
 (function (ADG) {
   const U = ADG.blocks.util;
 
@@ -16,12 +17,13 @@
       g.box(0, 0, w, h, 'mut', 'dash', U.str(cfg.title));
       const names = items.map((it) => (it.label != null ? U.str(it.label) : ctx.N(it.actor)));
       const nameW = U.widest(names, 1, 8);
+      const grow = ctx.playing ? Math.min(1, (ctx.step + ctx.t + 1) / Math.max(1, ctx.steps.length)) : 1;
       const mx = 2 + nameW + 1, mw = Math.max(0, w - 2 - mx);
       items.forEach((it, i) => {
         const y = 1 + i * 2, slot = U.slot(it.color, ctx.slot(it.actor) || 'fg');
         if (y + 1 >= h - 1) return;
         g.text(2, y, ADG.text.clip(names[i], nameW), slot, true);
-        if (mw > 0) g.meter(mx, y, mw, U.ratio(it.ratio), slot);
+        if (mw > 0) g.meter(mx, y, mw, U.ratio(it.ratio) * grow, slot);
         g.mtext(mx, y + 1, U.str(it.note), 'dim', false, null, Math.max(1, w - 2 - mx));
       });
       return { grid: g };

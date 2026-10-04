@@ -1,5 +1,7 @@
 /* Timeline: one row per actor, an activity pattern resampled to the track width, step ticks on an
    axis, step labels under it and a highlighted cursor column through the current step.
+   Paused: the whole pattern, cursor mid-step. Playing: the cursor moves through the step with
+   ctx.t and activity after it is not drawn yet (idle dots).
    Pattern: one glyph per time slice ('.' idle, any other glyph = activity in the actor color);
    the token '<>' always keeps its 2 cells. */
 (function (ADG) {
@@ -57,13 +59,18 @@
       const TX = 2 + nameW + 1, TW = w - 2 - TX;
       const steps = ctx.steps, B = bounds(cfg.bounds, steps.length);
       const col = (f) => TX + Math.round(f * (TW - 1));
-      const cur = cfg.cursor !== false && ctx.step >= 0 && ctx.step < steps.length && TW > 0
-        ? col((B[ctx.step] + B[ctx.step + 1]) / 2) : -1;
+      const live = cfg.cursor !== false && ctx.step >= 0 && ctx.step < steps.length && TW > 0;
+      const at = live ? (ctx.playing ? B[ctx.step] + ctx.t * (B[ctx.step + 1] - B[ctx.step]) : (B[ctx.step] + B[ctx.step + 1]) / 2) : 0;
+      const cur = live ? col(at) : -1;
+      const upto = live && ctx.playing ? cur : Infinity; // reveal limit while playing
       rows.forEach((r, i) => {
         const y = 1 + i, slot = ctx.slot(r.actor) || U.slot(r.color, 'fg');
         g.text(2, y, T.clip(names[i], nameW), slot, true);
         if (TW <= 0) return;
-        Array.from(resample(r.pattern, TW)).forEach((ch, c) => g.put(TX + c, y, ch, ch === '.' ? 'dot' : slot, ch !== '.'));
+        Array.from(resample(r.pattern, TW)).forEach((ch, c) => {
+          if (TX + c > upto) ch = '.';
+          g.put(TX + c, y, ch, ch === '.' ? 'dot' : slot, ch !== '.');
+        });
         if (cur >= 0) g.put(cur, y, '|', 'fg', true, 'hlcur');
       });
       if (TW > 0) {

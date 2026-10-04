@@ -4,26 +4,28 @@
 (function (ADG) {
   const TEMPLATE = 'agent-pipeline';
   const state = {
-    theme: 'midnight', border: 'ascii', cols: 96, step: 1,
+    theme: 'midnight', border: 'ascii', cols: 96, step: 1, seed: 0, speed: 1200,
     // image export options (also drive the preview font via CSS variables)
     win: 'macos', chrome: true, glow: false, scanline: false,
     font: 'JetBrains Mono', size: 12.5, lineHeight: 1.5, credit: 'made by @you'
   };
   const $ = (id) => document.getElementById(id);
 
-  /** Compose the current dashboard: { grid, pal, cols, rows }. */
-  function build() {
+  let player = null, lastHtml = '';
+
+  /** Compose the dashboard at a frame (default: the current step, paused): { grid, pal, cols, rows }. */
+  function build(step, t, playing) {
     const pal = ADG.theme.palette(state.theme);
     const config = ADG.templates[TEMPLATE].get();
     config.border = state.border;
     config.grid.cols = state.cols;
-    config.current = state.step;
-    const out = ADG.layout.compose(config);
+    config.seed = state.seed;
+    const out = ADG.frame.renderFrame(config, step == null ? state.step : step, t, { playing });
     return { grid: out.grid, pal, cols: out.cols, rows: out.rows };
   }
 
-  function render() {
-    const { grid, pal, cols, rows } = build();
+  function render(step, t, playing) {
+    const { grid, pal, cols, rows } = build(step, t, playing);
     const issues = ADG.grid.selfCheck(grid);
     const root = document.documentElement.style;
     root.setProperty('--adg-font', '"' + state.font + '", ui-monospace, Menlo, Consolas, monospace');
@@ -33,7 +35,8 @@
     screen.style.background = pal.bg;
     screen.style.color = pal.fg;
     screen.style.boxShadow = '0 0 0 1px ' + pal.line;
-    $('preview').innerHTML = ADG.htmlOut.renderHTML(grid, pal, { blink: true });
+    const html = ADG.htmlOut.renderHTML(grid, pal, { blink: true });
+    if (html !== lastHtml) { $('preview').innerHTML = html; lastHtml = html; } // only touch the DOM when the frame changed
     const status = $('check-status');
     status.textContent = issues.length
       ? 'Tự kiểm tra: ' + issues.length + ' cảnh báo (xem console)'
@@ -55,6 +58,7 @@
 
   function setState(patch) {
     Object.assign(state, patch);
+    if (player && 'step' in patch) player.sync(state.step);
     syncControls();
     render();
     ADG.exportDialog.refresh();
@@ -87,7 +91,22 @@
     [['theme-select', 'theme'], ['border-select', 'border'], ['cols-select', 'cols', Number], ['step-select', 'step', Number]].forEach(([id, key, parse]) => {
       $(id).addEventListener('change', (e) => setState({ [key]: parse ? parse(e.target.value) : e.target.value }));
     });
-    ADG.exportDialog.init({ getState: () => state, setState, build, template: TEMPLATE });
+    ADG.exportDialog.init({ getState: () => state, setState, build: () => build(), template: TEMPLATE });
+    const n = () => ADG.templates[TEMPLATE].get().steps.length;
+    player = ADG.player.create({
+      steps: n, step: state.step, speed: state.speed,
+      onFrame: (s, t, playing) => {
+        if (s !== state.step) { state.step = s; $('step-select').value = String(s); }
+        $('play').textContent = playing ? 'Dừng' : 'Phát';
+        $('play').setAttribute('aria-pressed', String(playing));
+        render(s, t, playing);
+      }
+    });
+    $('play').addEventListener('click', () => player.toggle());
+    $('prev').addEventListener('click', () => player.prev());
+    $('next').addEventListener('click', () => player.next());
+    $('speed').addEventListener('input', (e) => { state.speed = Number(e.target.value); player.setSpeed(state.speed); $('speed-label').textContent = (state.speed / 1000).toFixed(1) + ' s'; });
+    $('randomize').addEventListener('click', () => setState({ seed: 1 + Math.floor(Math.random() * 9998) }));
     syncControls();
     render();
     loadFromHash(); // the hash wins over the defaults (and, later, over saved state)

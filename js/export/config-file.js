@@ -16,6 +16,7 @@
     border: oneOf(() => ['ascii', 'unicode']),
     cols: int(40, 200),
     step: int(0, 99),
+    seed: int(0, 999999),
     win: oneOf(() => ADG.windowChrome.WINDOWS),
     chrome: bool,
     glow: bool,
