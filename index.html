@@ -4,40 +4,72 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ASCII Dashboard Generator</title>
+<meta name="description" content="Tạo dashboard terminal vẽ bằng ký tự ASCII, tuỳ chỉnh và xuất PNG / GIF / MP4 / text / share link.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&amp;family=IBM+Plex+Mono:wght@400;700&amp;family=Fira+Code:wght@400;700&amp;family=VT323&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;700&amp;family=IBM+Plex+Mono:wght@400;700&amp;family=Fira+Code:wght@400;700&amp;family=VT323&amp;display=swap">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="editor.css">
 </head>
 <body>
 <header class="app-bar">
-  <h1 class="app-title">ASCII Dashboard Generator</h1>
-  <label class="field">Chủ đề <select id="theme-select"></select></label>
-  <label class="field">Viền
-    <select id="border-select">
-      <option value="ascii">ASCII (+-|)</option>
-      <option value="unicode">Unicode (┌─┐)</option>
-    </select>
-  </label>
-  <label class="field">Số cột
-    <select id="cols-select">
-      <option value="80">80</option>
-      <option value="96" selected>96</option>
-      <option value="120">120</option>
-    </select>
-  </label>
-  <label class="field">Bước <select id="step-select"></select></label>
-  <button id="prev" class="btn" type="button" aria-label="Bước trước">‹</button>
-  <button id="play" class="btn" type="button" aria-pressed="false">Phát</button>
-  <button id="next" class="btn" type="button" aria-label="Bước sau">›</button>
-  <label class="field">Tốc độ <input id="speed" type="range" min="300" max="3000" step="100" value="1200"> <span id="speed-label">1.2 s</span></label>
-  <button id="randomize" class="btn" type="button">Randomize</button>
-  <span id="check-status" class="check-status"></span>
+  <div class="brand">
+    <button id="panel-toggle" class="btn btn-icon" type="button" aria-label="Thu gọn / mở panel" aria-controls="panel" aria-expanded="true">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M9 4v16"></path></svg>
+    </button>
+    <div>
+      <div class="logo">ascii<span>/</span>dash</div>
+      <div class="logo-sub">ASCII Dashboard Generator</div>
+    </div>
+  </div>
+  <label class="field">Template <select id="template-select"></select></label>
+  <div class="bar-fill"></div>
+  <div class="player" role="group" aria-label="Phát theo bước">
+    <button id="prev" class="btn btn-icon" type="button" aria-label="Bước trước">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
+    </button>
+    <button id="play" class="btn btn-play" type="button" aria-pressed="false">Phát</button>
+    <button id="next" class="btn btn-icon" type="button" aria-label="Bước sau">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+    </button>
+    <span id="step-label" class="step-label mono" aria-live="polite"></span>
+    <label class="field speed">Tốc độ <input id="speed" type="range" min="300" max="3000" step="100" aria-describedby="speed-label"> <span id="speed-label" class="mono"></span></label>
+    <label class="check"><input id="loop" type="checkbox"> Lặp</label>
+  </div>
+  <button id="randomize" class="btn" type="button" title="Đổi số liệu, độ dài thanh, mẫu timeline (giữ nguyên chữ)">Randomize</button>
+  <button id="share-quick" class="btn" type="button">Share link</button>
   <button id="export-open" class="btn btn-primary" type="button">Xuất</button>
 </header>
-<main class="stage">
-  <div id="screen" class="adg-screen"><div id="preview" class="adg-pre"></div></div>
-</main>
+
+<div class="workspace">
+  <aside id="panel" class="panel" aria-label="Chỉnh sửa">
+    <div class="tabs" role="tablist">
+      <button id="tab-btn-blocks" class="tab" role="tab" type="button" aria-selected="true" aria-controls="tab-blocks">Khối</button>
+      <button id="tab-btn-style" class="tab" role="tab" type="button" aria-selected="false" aria-controls="tab-style">Giao diện</button>
+      <button id="tab-btn-json" class="tab" role="tab" type="button" aria-selected="false" aria-controls="tab-json">JSON</button>
+    </div>
+    <div id="tab-blocks" class="tab-body" role="tabpanel" aria-labelledby="tab-btn-blocks">
+      <details class="sect" open><summary><h2>Nguồn dữ liệu</h2></summary><div id="data-source" class="sect-body"></div></details>
+      <details class="sect" open><summary><h2 id="layout-title">Bố cục</h2></summary><div id="layout-list" class="sect-body"></div></details>
+      <details class="sect" open id="block-sect"><summary><h2 id="block-title">Khối</h2></summary><div id="block-form" class="sect-body"></div></details>
+      <details class="sect" open id="flow-sect"><summary><h2>Flow · node graph</h2></summary><div id="flow-editor" class="sect-body"></div></details>
+    </div>
+    <div id="tab-style" class="tab-body" role="tabpanel" aria-labelledby="tab-btn-style" hidden></div>
+    <div id="tab-json" class="tab-body" role="tabpanel" aria-labelledby="tab-btn-json" hidden></div>
+  </aside>
+
+  <main class="stage">
+    <div class="preview-bar">
+      <div class="opt-row"><span class="opt-label">Cửa sổ</span><div id="win-seg" class="seg" role="group" aria-label="Kiểu cửa sổ"></div></div>
+      <div class="opt-row"><span class="opt-label">Cột</span><div id="cols-seg" class="seg" role="group" aria-label="Số cột"></div>
+        <input id="cols-custom" class="num" type="number" min="40" max="200" aria-label="Số cột tuỳ chọn" hidden>
+        <span id="rows-label" class="mut mono"></span></div>
+      <span id="check-status" class="check-status" role="status"></span>
+    </div>
+    <div id="preview-wrap" class="preview-wrap"><div id="preview-scale" class="preview-scale"><div id="preview-window"></div></div></div>
+    <p id="preview-note" class="mut preview-note" hidden></p>
+  </main>
+</div>
 
 <div id="export-overlay" class="overlay" hidden>
   <div id="export-dialog" class="dialog" role="dialog" aria-modal="true" aria-labelledby="export-title" tabindex="-1">
@@ -96,7 +128,7 @@
 </div>
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
-<!-- order = dependency order: core → blocks → templates → output → app (tests/run.js reads this list) -->
+<!-- order = dependency order: core → blocks → templates → output → export → ui → app (tests/run.js reads this list) -->
 <script src="js/core/text-utils.js"></script>
 <script src="js/core/theme.js"></script>
 <script src="js/core/markup.js"></script>
@@ -107,6 +139,8 @@
 <script src="js/core/random.js"></script>
 <script src="js/core/generators.js"></script>
 <script src="js/core/frame.js"></script>
+<script src="js/core/store.js"></script>
+<script src="js/core/list-codec.js"></script>
 <script src="js/blocks/registry.js"></script>
 <script src="js/blocks/status.js"></script>
 <script src="js/blocks/header.js"></script>
@@ -119,16 +153,31 @@
 <script src="js/blocks/flow-presets.js"></script>
 <script src="js/blocks/flow.js"></script>
 <script src="js/templates/agent-pipeline.js"></script>
+<script src="js/templates/server-monitor.js"></script>
+<script src="js/templates/ci-cd-build.js"></script>
+<script src="js/templates/blank.js"></script>
+<script src="js/templates/index.js"></script>
 <script src="js/output/html-renderer.js"></script>
 <script src="js/output/window-chrome.js"></script>
+<script src="js/output/html-chrome.js"></script>
 <script src="js/output/canvas-chrome.js"></script>
 <script src="js/output/canvas-renderer.js"></script>
 <script src="js/export/plain-text.js"></script>
 <script src="js/export/png.js"></script>
 <script src="js/export/config-file.js"></script>
 <script src="js/export/share-link.js"></script>
+<script src="js/export/storage.js"></script>
+<script src="js/ui/dom.js"></script>
 <script src="js/ui/export-dialog.js"></script>
 <script src="js/ui/player.js"></script>
+<script src="js/ui/preview.js"></script>
+<script src="js/ui/schema-form.js"></script>
+<script src="js/ui/data-source-form.js"></script>
+<script src="js/ui/layout-list.js"></script>
+<script src="js/ui/flow-editor.js"></script>
+<script src="js/ui/style-tab.js"></script>
+<script src="js/ui/json-tab.js"></script>
+<script src="js/ui/panel.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

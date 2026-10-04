@@ -1,6 +1,7 @@
-/* Config file / share payload: { version: 1, ...app state }. Validation is table-driven (FIELDS) and
-   forward-compatible: only known keys are read, unknown keys are ignored, missing keys keep the
-   current value. Later phases extend FIELDS instead of changing the format. */
+/* Config file / share payload / autosave: { version: 1, ...app state }. Validation is table-driven
+   (FIELDS) and forward-compatible: only known keys are read, unknown keys are ignored, missing keys
+   keep the current value. Content (actors, steps, layout, blocks) is checked for shape and size;
+   block fields themselves are read through the blocks' own guards when rendering. */
 (function (ADG) {
   const VERSION = 1;
   const MAX_FILE = 1024 * 1024;
@@ -9,6 +10,28 @@
   const num = (lo, hi) => (v) => (typeof v === 'number' && Number.isFinite(v) && v >= lo && v <= hi ? v : undefined);
   const bool = (v) => (typeof v === 'boolean' ? v : undefined);
   const oneOf = (list) => (v) => (typeof v === 'string' && list().indexOf(v) >= 0 ? v : undefined);
+  const isObj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
+  const ID = /^[A-Za-z0-9_-]{1,24}$/;
+  const MAX_BLOCKS_JSON = 200 * 1024;
+  const shortStr = (max) => (v) => typeof v === 'string' && v.length <= max;
+
+  /** Array of 0..max items that all pass `ok`, or undefined. */
+  const list = (max, ok) => (v) => (Array.isArray(v) && v.length <= max && v.every(ok) ? v : undefined);
+
+  const actor = (a) => isObj(a) && ID.test(a.id) && shortStr(40)(a.name) && ADG.theme.COLOR_KEYS.indexOf(a.color) >= 0;
+  const uniqueIds = (v) => (v && new Set(v.map((a) => a.id)).size === v.length ? v : undefined);
+  const layoutItem = (it) => (typeof it === 'string' && ID.test(it)) || (isObj(it) && ID.test(it.block) && (it.w === undefined || (typeof it.w === 'number' && it.w > 0 && it.w <= 100)));
+  const layoutRow = (r) => layoutItem(r) || (Array.isArray(r) && r.length >= 1 && r.length <= 4 && r.every(layoutItem));
+  function blocks(v) {
+    if (!isObj(v) || Object.keys(v).length > 40) return undefined;
+    if (!Object.keys(v).every((k) => ID.test(k) && isObj(v[k]))) return undefined;
+    return JSON.stringify(v).length <= MAX_BLOCKS_JSON ? v : undefined;
+  }
+  function colors(v) {
+    if (!isObj(v)) return undefined;
+    const ok = Object.keys(v).every((k) => ADG.theme.BASE_KEYS.indexOf(k) >= 0 && /^#[0-9a-f]{6}$/i.test(v[k]));
+    return ok ? v : undefined;
+  }
 
   /** key → validator returning the clean value, or undefined when invalid. */
   const FIELDS = {
@@ -17,6 +40,15 @@
     cols: int(40, 200),
     step: int(0, 99),
     seed: int(0, 999999),
+    template: oneOf(() => ADG.templateList.ids()),
+    actors: (v) => uniqueIds(list(20, actor)(v)),
+    steps: list(20, shortStr(40)),
+    layout: list(40, layoutRow),
+    blocks,
+    colors,
+    blink: bool,
+    loop: bool,
+    speed: int(300, 3000),
     win: oneOf(() => ADG.windowChrome.WINDOWS),
     chrome: bool,
     glow: bool,

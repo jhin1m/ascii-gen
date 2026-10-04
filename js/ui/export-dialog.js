@@ -1,26 +1,34 @@
 /* Export dialog (PNG / plain text / .json / share link) + toast. All DOM wiring lives here; the
    actual work is done by ADG.canvasOut, ADG.png, ADG.plainText, ADG.configFile and ADG.share.
-   app.js supplies the state through init({ getState, setState, build, template }). */
+   app.js supplies the state through init({ getState, setState, build, template }); template is the
+   template id or a function returning it (used in file names and window titles). */
 (function (ADG) {
   const $ = (id) => document.getElementById(id);
   const FOCUSABLE = 'button:not([disabled]), input:not([disabled]), select:not([disabled]), [href], [tabindex]:not([tabindex="-1"])';
   let api = null, scale = 2, lastFocus = null, seq = 0, toastTimer = 0, busy = false;
 
-  /** Short status message; kind = 'ok' | 'error'. */
-  function toast(msg, kind) {
+  /** Short status message; kind = 'ok' | 'error'; optional action { label, run } adds a button (e.g. undo). */
+  function toast(msg, kind, action) {
     const el = $('toast');
     el.textContent = msg;
+    if (action) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'btn btn-sm toast-action'; b.textContent = action.label;
+      b.addEventListener('click', () => { el.hidden = true; action.run(); });
+      el.appendChild(b);
+    }
     el.className = 'toast ' + (kind === 'error' ? 'error' : 'ok');
     el.hidden = false;
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => { el.hidden = true; }, kind === 'error' ? 6000 : 3000);
+    toastTimer = setTimeout(() => { el.hidden = true; }, kind === 'error' || action ? 6000 : 3000);
   }
 
   const isOpen = () => !$('export-overlay').hidden;
+  const tpl = () => (typeof api.template === 'function' ? api.template() : api.template);
 
   function pngOpts() {
     const s = api.getState();
-    return { scale, chrome: s.chrome, win: s.win, font: s.font, size: s.size, lineHeight: s.lineHeight, glow: s.glow, scanline: s.scanline, credit: s.credit, template: api.template };
+    return { scale, chrome: s.chrome, win: s.win, font: s.font, size: s.size, lineHeight: s.lineHeight, glow: s.glow, scanline: s.scanline, credit: s.credit, template: tpl() };
   }
 
   function syncControls() {
@@ -43,7 +51,7 @@
     await ADG.canvasOut.ensureFont(opts);
     if (token !== seq) return;
     const m = ADG.canvasOut.measure(grid, opts);
-    out.textContent = 'Kích thước dự kiến: ' + ADG.png.sizeLabel(m.width, m.height) + ' · ' + ADG.png.fileName(api.template, scale)
+    out.textContent = 'Kích thước dự kiến: ' + ADG.png.sizeLabel(m.width, m.height) + ' · ' + ADG.png.fileName(tpl(), scale)
       + (m.limit ? '\n⚠ ' + m.limit : '');
     out.classList.toggle('warn', !!m.limit);
     $('png-download').disabled = !!m.limit;
@@ -92,7 +100,7 @@
     btn.disabled = true; btn.textContent = 'Đang tạo ảnh…';
     try {
       const { grid, pal } = api.build();
-      const name = await ADG.png.exportPng(grid, pal, pngOpts(), api.template);
+      const name = await ADG.png.exportPng(grid, pal, pngOpts(), tpl());
       toast('Đã tải ' + name, 'ok');
     } catch (e) {
       toast('Không xuất được PNG: ' + e.message, 'error');
@@ -166,7 +174,7 @@
     $('opt-scanline').addEventListener('change', (e) => patch({ scanline: e.target.checked }));
     $('png-download').addEventListener('click', downloadPng);
     $('text-copy').addEventListener('click', () => copyText(ADG.plainText.toPlainText(api.build().grid), 'Đã copy plain text'));
-    $('json-download').addEventListener('click', () => toast('Đã tải ' + ADG.configFile.download(api.getState(), api.template), 'ok'));
+    $('json-download').addEventListener('click', () => toast('Đã tải ' + ADG.configFile.download(api.getState(), tpl()), 'ok'));
     $('json-open').addEventListener('click', () => $('json-file').click());
     $('json-file').addEventListener('change', (e) => {
       const f = e.target.files && e.target.files[0];

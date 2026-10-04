@@ -17,13 +17,13 @@ SOURCES.forEach((f) => { if (!fs.existsSync(path.join(ROOT, f))) throw new Error
 
 const warnings = [];
 const sandboxConsole = { log: console.log, error: console.error, warn: (...a) => warnings.push(a) };
-const ctx = vm.createContext({ window: {}, console: sandboxConsole });
+const ctx = vm.createContext({ window: {}, console: sandboxConsole, setTimeout, clearTimeout });
 SOURCES.forEach((f) => vm.runInContext(fs.readFileSync(path.join(ROOT, f), 'utf8'), ctx, { filename: f }));
 const ADG = ctx.window.ADG;
 
 fs.readdirSync(__dirname).filter((f) => f.endsWith('.test.js')).sort().forEach((f) => {
   harness.setGroup(f);
-  require(path.join(__dirname, f))({ ADG, test: harness.test, assert: harness.assert, warnings });
+  require(path.join(__dirname, f))({ ADG, test: harness.test, assert: harness.assert, warnings, sandbox: ctx });
 });
 
 process.exitCode = harness.run() ? 1 : 0;

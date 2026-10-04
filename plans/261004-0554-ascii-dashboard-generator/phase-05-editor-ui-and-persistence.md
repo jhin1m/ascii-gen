@@ -1,7 +1,7 @@
 ---
 phase: 5
 title: "Phase 5: Editor UI and persistence"
-status: todo
+status: completed
 priority: P1
 effort: "10h"
 dependencies: [4]
