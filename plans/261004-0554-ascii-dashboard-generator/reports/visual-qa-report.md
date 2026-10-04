@@ -43,8 +43,10 @@ Remaining differences (accepted): wording is generic (no real model names, by de
 - Safari (display, PNG, MP4) and Firefox (WebM path): no Safari/Firefox in this environment.
 - Real file downloads / clipboard prompts (downloads require user consent; blobs were verified in-page instead).
 - Slack/Discord GIF preview; QuickTime playback of the MP4.
-- GitHub Pages deploy + share link in an incognito tab: waiting for the user's confirmation (repo name, public/private).
+- Incognito specifically (verified in a fresh tab with empty storage instead).
 
 ## Unresolved questions
-- Repo name and visibility for GitHub Pages; then `SHARE_BASE` in `js/export/share-link.js`.
 - User sign-off that the style matches ref.png.
+
+## Deploy
+- https://jhin1m.github.io/ascii-gen/ — share link created on the live site reopened in a new tab with empty localStorage: identical config (ci-cd-build, "Thợ build", step 5/7, 120 cols, unicode, Ubuntu window), self-check OK.

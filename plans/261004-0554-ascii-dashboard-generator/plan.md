@@ -50,7 +50,7 @@ Nguồn quyết định: [brainstorm report](../reports/brainstorm-261004-1235-a
 | 5 | [Phase 5: Editor UI and persistence](./phase-05-editor-ui-and-persistence.md) | Completed |
 | 6 | [Phase 6: Canvas output and exports](./phase-06-canvas-output-and-exports.md) | Completed |
 | 7 | [Phase 7: GIF and video export](./phase-07-gif-and-video-export.md) | Completed |
-| 8 | [Phase 8: Visual QA and polish](./phase-08-visual-qa-and-polish.md) | In progress (chờ deploy + duyệt phong cách) |
+| 8 | [Phase 8: Visual QA and polish](./phase-08-visual-qa-and-polish.md) | In progress (chờ duyệt phong cách + Safari/Firefox) |
 
 Dependencies: 1 → 2 → 3 → 4 → 5; 6 cần 2 (chạy song song được với 3–5); 7 cần 4 + 6; 8 cần tất cả.
 
@@ -70,7 +70,7 @@ config ─► generators (điền phần auto, seed) ─► layout (block.render
 - [x] GIF/MP4 chạy đủ các bước, lặp; Firefox ra WebM (Firefox chưa kiểm tra tay — đường WebM có code + chọn qua isTypeSupported)
 - [x] Mobile 390px: preview trên, panel dưới, không cuộn ngang
 - [x] Mở bằng `file://` chạy đủ (share link cảnh báo khi chưa có `SHARE_BASE`)
-- [ ] Deploy GitHub Pages; share link mở đúng hình trên máy khác
+- [x] Deploy GitHub Pages (https://jhin1m.github.io/ascii-gen/); share link mở đúng hình ở tab mới, localStorage trống
 
 ## Open Questions
 None.

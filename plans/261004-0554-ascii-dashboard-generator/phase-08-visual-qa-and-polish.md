@@ -55,4 +55,5 @@ Unverified in Phase 6, verify in real browsers:
 ## Progress (2026-10-04)
 <!-- Updated: phase 8 execution -->
 - Done: `js/core/qa-matrix.js` (`ADG.qa.matrix()` → 0 issues, pinned by tests/qa-matrix.test.js); ref.png comparison → dashed boxes for lead/workers/review + side column; PNG 2x, GIF, MP4 (WebCodecs + recorder) verified in Chrome; 390px no horizontal scroll; `file://` render via headless Chrome. Report: `reports/visual-qa-report.md` (+ screenshot).
-- Remaining: user sign-off on style vs ref.png; GitHub Pages deploy (repo name + visibility to confirm) + `SHARE_BASE`; Safari/Firefox manual checks.
+- Deployed: public repo https://github.com/jhin1m/ascii-gen, Pages https://jhin1m.github.io/ascii-gen/ (main, root, .nojekyll); `SHARE_BASE` set; share link verified on the live site in a fresh tab (template, Vietnamese actor name, step, cols, border, window restored).
+- Remaining: user sign-off on style vs ref.png; Safari/Firefox manual checks.
