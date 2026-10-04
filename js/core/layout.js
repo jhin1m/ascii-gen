@@ -8,7 +8,8 @@
   const MARGIN = 1, GAP_X = 1, GAP_Y = 1, PAD_TOP = 1;
   const MIN_COLS = 40, MAX_COLS = 240, MAX_ROWS = 400; // page rows: later layout rows are dropped
 
-  const RESERVED = ['bar', 'm'].concat(ADG.theme.COLOR_KEYS);
+  // markup tags and {@step}/{@stepn} tokens: an actor with one of these ids would hijack it
+  const RESERVED = ['bar', 'm', 'step', 'stepn'].concat(ADG.theme.COLOR_KEYS);
   const isReserved = (id) => RESERVED.indexOf(id) >= 0 || (/b$/.test(id) && ADG.theme.COLOR_KEYS.indexOf(id.slice(0, -1)) >= 0);
 
   /** Split `total` cells by weights (missing/invalid weight = 1); the remainder goes to the last. */
@@ -40,7 +41,8 @@
       // braces/asterisks would turn a name into markup when blocks embed it
       names[a.id] = ADG.text.sanitize(String(a.name == null ? a.id : a.name).replace(/[{}*]/g, '')).trim() || a.id;
     });
-    const steps = U.arr(config.steps, 20).map((s) => ADG.text.sanitize(String(s)));
+    // like names: steps are embedded in generated markup and {@step} tokens
+    const steps = U.arr(config.steps, 20).map((s) => ADG.text.sanitize(String(s).replace(/[{}*]/g, '')));
     const cur = Math.floor(Number(config.current));
     const border = config.border === 'unicode' ? 'unicode' : 'ascii';
     return {

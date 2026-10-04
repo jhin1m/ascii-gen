@@ -107,6 +107,9 @@
     ['{step} · handing off', '{step} · done in {n}.{d} s', '{step}: ready for next step']
   ];
 
+  /** Phrase placeholders in one pass, so text put in (a step name) is never re-read as a placeholder. */
+  const fill = (s, vals) => s.replace(/\{(step|n|d)\}/g, (m, k) => String(vals[k]));
+
   /** Clock text for minute m after 09:00. */
   const clock = (m) => String(9 + Math.floor(m / 60) % 15).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
 
@@ -127,7 +130,7 @@
           const w = R().rng(0, 'log:' + s + ':' + k), r = R().rng(seed, 'log:' + s + ':' + k);
           m += r.int(1, 3);
           const msg = A.oncall[id] ? 'advising · ' + step + ' -> reviewed'
-            : w.pick(PHRASES[Math.min(2, k)]).replace('{step}', step).replace('{n}', String(r.int(2, 9))).replace('{d}', String(r.int(0, 9)));
+            : fill(w.pick(PHRASES[Math.min(2, k)]), { n: r.int(2, 9), d: r.int(0, 9), step });
           lines.push({ t: clock(m), actor: id, msg, step: s });
         });
       });
@@ -164,13 +167,15 @@
       } else if (P) {
         targets = [P.spokes[0], P.spokes[1], P.tails[0] || P.spokes[3]].filter(Boolean).map((key, i) => ({ key, s: i }));
       }
-      const items = [{ kind: 'note', text: '{m:listening}' }];
+      const items = [];
       targets.forEach((t, i) => {
         const id = P.nodes[t.key].name;
+        // the first milestone opens the column so it can snap level with the first node
+        if (i === 1) items.push({ kind: 'note', text: '{m:listening}' });
         items.push({ kind: 'milestone', title: 'before ' + (A.steps[t.s] || 'done'), q: A.ids.indexOf(id) >= 0 ? 'check {@' + id + '}?' : 'check ' + id + '?', a: ['looks right', 'add 1 test', 'stop retrying'][i % 3], link: P.idOf(t.key) });
         if (i === 0) items.push({ kind: 'pulse', bits: Array.from({ length: 10 }, () => (r() > 0.35 ? '1' : '0')).join('') }, { kind: 'kv', k: 'calls', v: String(r.int(2, 12)) }, { kind: 'kv', k: 'tokens', v: r.int(100, 999) + 'k' });
       });
-      if (!targets.length) items.push({ kind: 'kv', k: 'steps', v: String(A.steps.length) }, { kind: 'kv', k: 'actors', v: String(A.ids.length) });
+      if (!targets.length) items.push({ kind: 'note', text: '{m:listening}' }, { kind: 'kv', k: 'steps', v: String(A.steps.length) }, { kind: 'kv', k: 'actors', v: String(A.ids.length) });
       return { title: watcher ? '{a2b:{@' + watcher + '^} · on call}' : 'on call', sub: 'watches every step', items };
     }
   };
@@ -184,7 +189,7 @@
   /** Fill every `auto: true` block of a (cloned) config in place; returns the activity used. */
   function apply(config) {
     const A = activity(config), blocks = isObj(config.blocks) ? config.blocks : {};
-    const step = Math.floor(Number(config.current)) || 0;
+    const step = ADG.layout.makeCtx(config).step; // clamped like the layout does
     Object.keys(blocks).forEach((key) => {
       const b = blocks[key];
       if (!isObj(b) || b.auto !== true) return;

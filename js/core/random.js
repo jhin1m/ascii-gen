@@ -40,9 +40,18 @@
     });
   }
 
-  /** New digits in markup text; tag names (`{a3b:`) and inline bars (`{bar:..}`) stay as they are. */
+  /**
+   * New digits for the plain counters in markup text (`6`, `643k`, `1,683`). Tag names (`{a3b:`),
+   * inline bars, and numbers that belong to a ratio, time, percentage or decimal (`0/3`, `09:30`,
+   * `100%`, `0.5 s`) stay as they are: new digits there would make impossible values.
+   */
   function renumber(s, r) {
-    return String(s == null ? '' : s).replace(/\{bar:[^}]*\}|\{[A-Za-z0-9_@^-]+:?|\d+(?:[,.]\d+)*/g, (m) => (/^\d/.test(m) ? digits(m, r) : m));
+    s = String(s == null ? '' : s);
+    return s.replace(/\{bar:[^}]*\}|\{[A-Za-z0-9_@^-]+:?|\d+(?:[,.]\d+)*/g, (m, at) => {
+      if (!/^\d/.test(m) || /\./.test(m)) return m;
+      const before = s[at - 1] || '', after = s[at + m.length] || '';
+      return /[/:]/.test(before) || /[/:%.]/.test(after) ? m : digits(m, r);
+    });
   }
 
   /** Inline bars `{bar:r:w:slot}` get a new ratio. */

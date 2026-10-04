@@ -42,6 +42,7 @@
 
     /** Jump to a step (keeps playing from there when playing). */
     function seek(s) {
+      if (!Number.isFinite(Number(s))) return;
       const n = count();
       step = ((Math.floor(s) % n) + n) % n; t = 0;
       if (playing) { t0 = now(); from = step; }

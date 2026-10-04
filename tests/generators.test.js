@@ -2,7 +2,6 @@ module.exports = ({ ADG, test, assert }) => {
   const pipeline = () => ADG.templates['agent-pipeline'].get();
   const frame = (cfg, step, t, playing) => ADG.frame.renderFrame(cfg, step == null ? cfg.current : step, t || 0, { playing: !!playing });
   const text = (r) => r.grid.toLines().join('\n');
-  const words = (s) => s.replace(/[\d,.]+/g, '#').replace(/[^A-Za-z\s#]/g, ' ').replace(/\s+/g, ' ');
 
   test('random: mulberry32 / rng are deterministic, streams independent per path', () => {
     const a = ADG.random.rng(7, 'x'), b = ADG.random.rng(7, 'x'), c = ADG.random.rng(7, 'y'), d = ADG.random.rng(8, 'x');
@@ -18,6 +17,19 @@ module.exports = ({ ADG, test, assert }) => {
     assert.ok(/^\{a3b:[1-9],\d{3}\} forks \{bar:0\.5:6:a1\} [1-9]\d\dk$/.test(out), out);
   });
 
+  test('random: ratios, times, percentages and decimals are not renumbered', () => {
+    for (let seed = 1; seed < 60; seed++) {
+      const out = ADG.random.renumber('{a2b:0/3} 100% at 09:30 in 0.5 s · 12 probes', ADG.random.rng(seed, 'p'));
+      assert.ok(/^\{a2b:0\/3\} 100% at 09:30 in 0\.5 s · [1-9]\d probes$/.test(out), out);
+    }
+  });
+
+  test('actor ids step / stepn are reserved; step names lose markup characters', () => {
+    const ctx = ADG.layout.makeCtx({ actors: [{ id: 'step', name: 'S', color: 'a1' }], steps: ['a{b}*c'] });
+    assert.eq(ctx.slot('step'), null);
+    assert.deq(ctx.steps, ['abc']);
+  });
+
   test('same seed → same grid; another seed → other numbers, same words', () => {
     const cfg = pipeline();
     const s0 = text(frame(cfg)), again = text(frame(pipeline()));
@@ -28,7 +40,9 @@ module.exports = ({ ADG, test, assert }) => {
     assert.ok(s42 !== s0, 'seed changes the picture');
     const tables = (s) => s.split('\n').filter((l) => /which file/.test(l)).join();
     assert.ok(tables(s42) !== tables(s0), 'router table bar/value changed');
-    assert.eq(words(s42).replace(/ /g, '').length > 0, true);
+    // letters only: digits, bars and pulse marks may change; 'x' is a timeline activity glyph
+    const letters = (s) => s.replace(/[^A-Za-wyz]/g, '');
+    assert.eq(letters(s42), letters(s0), 'same words');
     // the words of hand-written blocks are kept (pulse marks and bars are not words)
     ['AGENT PIPELINE', 'session timeline', 'tail -f session.log', 'who sees what', 'which tool', 'never writes code'].forEach((w) => assert.ok(s42.indexOf(w) >= 0, w));
   });
